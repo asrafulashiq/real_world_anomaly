@@ -31,6 +31,7 @@ def get_csv_line_video(vid_file, clip_length=16):
     num_frames = get_num_frame(vid_file)
 
     strt_frm_list = range(0, num_frames, clip_length)
+    strt_frm_list.pop()
     line_l = zip([os.path.abspath(vid_file)]*len(strt_frm_list), strt_frm_list)
     return line_l
 
