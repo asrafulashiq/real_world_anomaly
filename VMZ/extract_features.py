@@ -1,4 +1,5 @@
 import os
+import shutil
 from helper import *
 from pathlib2 import Path
 import platform
@@ -15,6 +16,9 @@ ANOM_FOLDER = PARENT_FOLDER / 'Anomaly-Videos'
 
 assert PARENT_FOLDER.exists()
 
+if os.path.exists('tmp_lmdb_data'):
+	shutil.rmtree('tmp_lmdb_data')
+
 CMD_1 = '''
 python data/create_video_db.py \
 --list_file=tmp.csv \
@@ -30,7 +34,7 @@ python  tools/extract_features.py \
 --batch_size=4 \
 --load_model_path=./model/r2.5d_d18_l16.pkl \
 --output_path={} \
---features=softmax,final_avg,video_id \
+--features=final_avg \
 --sanity_check=0 --get_video_id=1 --use_local_file=1 --num_labels=1
 '''
 
@@ -47,7 +51,7 @@ for anom in ANOM_FOLDER.iterdir():
 
     # create feature folder for this type
 
-    for vid_file in anom.iterdir():
+    for vid_file in sorted(anom.iterdir()):
 		vid_file_name = vid_file.name
 
 		# create temporary csv file tmp.csv
@@ -62,6 +66,8 @@ for anom in ANOM_FOLDER.iterdir():
 		# TODO
 		CMD_2 = CMD_2_tmp.format(feat_path.__str__())
 		subprocess.check_output(CMD_2, shell=True)
+		shutil.rmtree('tmp_lmdb_data')
+		# asdasdasdas
 
 # extract normal folder
 normal_test_train = ['Training-Normal-Videos',
@@ -73,7 +79,7 @@ for normal_folder in normal_test_train:
 
 	normal = PARENT_FOLDER / normal_folder
 
-	for vid_file in normal.iterdir():
+	for vid_file in sorted(normal.iterdir()):
 		vid_file_name = vid_file.name
 		# create temporary csv file tmp.csv
 		csvfile = 'tmp.csv'
@@ -87,3 +93,4 @@ for normal_folder in normal_test_train:
 		# TODO
 		CMD_2 = CMD_2_tmp.format(feat_path.__str__())
 		subprocess.check_output(CMD_2, shell=True)
+		shutil.rmtree('tmp_lmdb_data')
