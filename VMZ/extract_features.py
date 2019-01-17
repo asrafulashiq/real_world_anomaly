@@ -41,7 +41,7 @@ FEAT_PARENT_FOLDER = PARENT_FOLDER / '3D_features'
 FEAT_ANOM_FOLDER = FEAT_PARENT_FOLDER / 'Anomaly-Videos'
 
 FEAT_ANOM_FOLDER.mkdir(parents=True, exist_ok=True)
-
+'''
 for anom in ANOM_FOLDER.iterdir():
     anom_type = anom.name
 
@@ -62,4 +62,28 @@ for anom in ANOM_FOLDER.iterdir():
 		# TODO
 		CMD_2 = CMD_2_tmp.format(feat_path.__str__())
 		subprocess.check_output(CMD_2, shell=True)
-		sdasdasd
+'''
+# extract normal folder
+normal_test_train = ['Training-Normal-Videos',
+                       'Testing_Normal_Videos_Anomaly']
+
+for normal_folder in normal_test_train:
+	feat_normal_fldr = FEAT_PARENT_FOLDER / normal_folder
+	feat_normal_fldr.mkdir(parents=True, exist_ok=True)
+
+	normal = PARENT_FOLDER / normal_folder
+
+	for vid_file in normal.iterdir():
+		vid_file_name = vid_file.name
+		# create temporary csv file tmp.csv
+		csvfile = 'tmp.csv'
+		write_csv_for_lmdb(vid_file, csvfile)
+
+		# extract lmdb file format
+		# TODO:
+		subprocess.check_output(CMD_1, shell=True)
+
+		feat_path = feat_normal_fldr / (vid_file_name+'.pkl')
+		# TODO
+		CMD_2 = CMD_2_tmp.format(feat_path.__str__())
+		subprocess.check_output(CMD_2, shell=True)
