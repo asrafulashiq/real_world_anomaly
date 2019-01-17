@@ -41,7 +41,7 @@ FEAT_PARENT_FOLDER = PARENT_FOLDER / '3D_features'
 FEAT_ANOM_FOLDER = FEAT_PARENT_FOLDER / 'Anomaly-Videos'
 
 FEAT_ANOM_FOLDER.mkdir(parents=True, exist_ok=True)
-'''
+
 for anom in ANOM_FOLDER.iterdir():
     anom_type = anom.name
 
@@ -62,7 +62,7 @@ for anom in ANOM_FOLDER.iterdir():
 		# TODO
 		CMD_2 = CMD_2_tmp.format(feat_path.__str__())
 		subprocess.check_output(CMD_2, shell=True)
-'''
+
 # extract normal folder
 normal_test_train = ['Training-Normal-Videos',
                        'Testing_Normal_Videos_Anomaly']
