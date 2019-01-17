@@ -5,6 +5,10 @@ from pathlib2 import Path
 import platform
 import subprocess
 
+# overwrite already existed .pkl file
+do_overwrite = False
+
+
 if platform.node() == 'ash-ubuntu':
 	PARENT_FOLDER = Path('/media/ash/New Volume/dataset/UCF_crime/')
 else:
@@ -35,7 +39,9 @@ python  tools/extract_features.py \
 --load_model_path=./model/r2.5d_d18_l16.pkl \
 --output_path={} \
 --features=final_avg \
---sanity_check=0 --get_video_id=1 --use_local_file=1 --num_labels=1
+--sanity_check=0 --get_video_id=1 --use_local_file=1 --num_labels=1 && \
+rm -rf tmp_lmdb_data && \
+rm tmp.csv
 '''
 
 # import pdb; pdb.set_trace()
@@ -54,19 +60,22 @@ for anom in ANOM_FOLDER.iterdir():
     for vid_file in sorted(anom.iterdir()):
 		vid_file_name = vid_file.name
 
+		feat_path = FEAT_ANOM_FOLDER / (vid_file_name+'.pkl')
+
+		if not do_overwrite and feat_path.exists():
+			print("{} exists".format(feat_path))
+			continue
+
 		# create temporary csv file tmp.csv
 		csvfile = 'tmp.csv'
 		write_csv_for_lmdb(vid_file, csvfile)
 
 		# extract lmdb file format
-		# TODO:
 		subprocess.check_output(CMD_1, shell=True)
 		# extract features
-		feat_path = FEAT_ANOM_FOLDER / (vid_file_name+'.pkl')
-		# TODO
 		CMD_2 = CMD_2_tmp.format(feat_path.__str__())
 		subprocess.check_output(CMD_2, shell=True)
-		shutil.rmtree('tmp_lmdb_data')
+		# shutil.rmtree('tmp_lmdb_data')
 		# asdasdasdas
 
 # extract normal folder
@@ -81,16 +90,18 @@ for normal_folder in normal_test_train:
 
 	for vid_file in sorted(normal.iterdir()):
 		vid_file_name = vid_file.name
+
+		feat_path = feat_normal_fldr / (vid_file_name+'.pkl')
+		if not do_overwrite and feat_path.exists():
+			print("{} exists".format(feat_path))
+			continue
+
 		# create temporary csv file tmp.csv
 		csvfile = 'tmp.csv'
 		write_csv_for_lmdb(vid_file, csvfile)
 
 		# extract lmdb file format
-		# TODO:
 		subprocess.check_output(CMD_1, shell=True)
-
-		feat_path = feat_normal_fldr / (vid_file_name+'.pkl')
-		# TODO
 		CMD_2 = CMD_2_tmp.format(feat_path.__str__())
 		subprocess.check_output(CMD_2, shell=True)
-		shutil.rmtree('tmp_lmdb_data')
+		# shutil.rmtree('tmp_lmdb_data')
