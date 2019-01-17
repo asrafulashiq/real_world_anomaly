@@ -1,6 +1,7 @@
 import cv2
 import os
 import csv
+import pathlib2
 from pathlib2 import Path
 
 def get_num_frame(vid_file):
@@ -24,7 +25,8 @@ def get_csv_line_video(vid_file, clip_length=16):
     Keyword Arguments:
         clip_length {int} --  (default: {16})
     """
-    if 
+    if type(vid_file) == pathlib2.PosixPath:
+        vid_file = str(vid_file)
     assert os.path.exists(vid_file), "file (%s) not found".format(vid_file)
     num_frames = get_num_frame(vid_file)
 
