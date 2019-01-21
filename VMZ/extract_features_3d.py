@@ -30,15 +30,18 @@ python data/create_video_db.py \
 --use_list=1 --use_video_id=1 --use_start_frame=1
 '''
 
+model_name = "c3d"
+model_path = "./model/c3d_l16.pkl"
+
 CMD_2_tmp = '''
 python  tools/extract_features.py \
 --test_data=tmp_lmdb_data \
---model_name=r2plus1d --model_depth=18 --clip_length_rgb=16 \
+--model_name={model_name} --model_depth=18 --clip_length_rgb=16 \
 --gpus=0 \
 --batch_size=4 \
---load_model_path=./model/r2.5d_d18_l16.pkl \
---output_path={} \
---features=final_avg \
+--load_model_path={load_model_path} \
+--output_path={output_path} \
+--features=fc6 \
 --sanity_check=0 --get_video_id=1 --use_local_file=1 --num_labels=1 && \
 rm -rf tmp_lmdb_data && \
 rm tmp.csv
@@ -47,7 +50,7 @@ rm tmp.csv
 # import pdb; pdb.set_trace()
 
 # extract anomaly folder
-FEAT_PARENT_FOLDER = PARENT_FOLDER / '3D_features'
+FEAT_PARENT_FOLDER = PARENT_FOLDER / 'C3D_features'
 FEAT_ANOM_FOLDER = FEAT_PARENT_FOLDER / 'Anomaly-Videos'
 
 FEAT_ANOM_FOLDER.mkdir(parents=True, exist_ok=True)
@@ -73,7 +76,8 @@ for anom in ANOM_FOLDER.iterdir():
 		# extract lmdb file format
 		subprocess.check_output(CMD_1, shell=True)
 		# extract features
-		CMD_2 = CMD_2_tmp.format(feat_path.__str__())
+		CMD_2 = CMD_2_tmp.format(model_name=model_name,load_model_path=model_path,
+								output_path=str(feat_path))
 		subprocess.check_output(CMD_2, shell=True)
 		# shutil.rmtree('tmp_lmdb_data')
 		# asdasdasdas
