@@ -141,8 +141,8 @@ def load_dataset_Train_batch(AbnormalPath, NormalPath):
             AllFeatures = np.vstack((AllFeatures, VideoFeatues))
         print(" Abnormal Features  loaded")
 
-        
-        
+
+
     print("Loading Normal videos...")
     AllVideos_Path =  NormalPath
 
@@ -165,8 +165,6 @@ def load_dataset_Train_batch(AbnormalPath, NormalPath):
         count = -1;
         VideoFeatues = []
         for feat in xrange(0, num_feat):
-
-
             feat_row1 = np.float32(words[feat * 4096:feat * 4096 + 4096])
             count = count + 1
             if count == 0:
@@ -186,11 +184,11 @@ def load_dataset_Train_batch(AbnormalPath, NormalPath):
 
 
     for iv in xrange(0, 32*batchsize):
-            if iv< th_loop1:
-                AllLabels[iv] = int(0)  # All instances of abnormal videos are labeled 0.  This will be used in custom_objective to keep track of normal and abnormal videos indexes.
-            if iv > th_loop2:
-                AllLabels[iv] = int(1)   # All instances of Normal videos are labeled 1. This will be used in custom_objective to keep track of normal and abnormal videos indexes.
-           # print("ALLabels  loaded")
+        if iv< th_loop1:
+            AllLabels[iv] = int(0)  # All instances of abnormal videos are labeled 0.  This will be used in custom_objective to keep track of normal and abnormal videos indexes.
+        if iv > th_loop2:
+            AllLabels[iv] = int(1)   # All instances of Normal videos are labeled 1. This will be used in custom_objective to keep track of normal and abnormal videos indexes.
+        # print("ALLabels  loaded")
 
     return  AllFeatures,AllLabels
 

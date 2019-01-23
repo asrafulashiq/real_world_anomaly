@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/ash/anaconda3/envs/ucf-ano/bin/python",
+    "python.pythonPath": "/home/ash/anaconda3/envs/c2/bin/python",
     "python.linting.pylintEnabled": false,
     "python.linting.pep8Enabled": true,
     "python.linting.enabled": false

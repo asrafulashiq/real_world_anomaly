@@ -55,15 +55,18 @@ FEAT_ANOM_FOLDER = FEAT_PARENT_FOLDER / 'Anomaly-Videos'
 
 FEAT_ANOM_FOLDER.mkdir(parents=True, exist_ok=True)
 
+'''
 for anom in ANOM_FOLDER.iterdir():
     anom_type = anom.name
+    anom_type_folder = FEAT_ANOM_FOLDER #/ anom_type
+    #anom_type_folder.mkdir(exist_ok=True, parents=True)
 
-    # create feature folder for this type
+	# create feature folder for this type
 
     for vid_file in sorted(anom.iterdir()):
 		vid_file_name = vid_file.name
 
-		feat_path = FEAT_ANOM_FOLDER / (vid_file_name+'.pkl')
+		feat_path = anom_type_folder  / (vid_file_name+'.pkl')
 
 		if not do_overwrite and feat_path.exists():
 			print("{} exists".format(feat_path))
@@ -81,6 +84,7 @@ for anom in ANOM_FOLDER.iterdir():
 		subprocess.check_output(CMD_2, shell=True)
 		# shutil.rmtree('tmp_lmdb_data')
 		# asdasdasdas
+'''
 
 # extract normal folder
 normal_test_train = ['Training-Normal-Videos',
@@ -106,6 +110,7 @@ for normal_folder in normal_test_train:
 
 		# extract lmdb file format
 		subprocess.check_output(CMD_1, shell=True)
-		CMD_2 = CMD_2_tmp.format(feat_path.__str__())
+		CMD_2 = CMD_2_tmp.format(model_name=model_name, load_model_path=model_path,
+                                 output_path=str(feat_path))
 		subprocess.check_output(CMD_2, shell=True)
 		# shutil.rmtree('tmp_lmdb_data')
