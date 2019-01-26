@@ -45,8 +45,8 @@ def load_dataset_batch(abnormal_list_path, normal_list_path,
     sampled_normal_list = random.sample(normal_list, batch_size//2)
     sampled_abnormal_list = random.sample(abnormal_list, batch_size//2)
 
-    Data = np.zeros((batch_size * segment_size, feat_size), dtype=np.float)
-    Labels = np.zeros(batch_size * segment_size, dtype=np.float)
+    data = np.zeros((batch_size * segment_size, feat_size), dtype=np.float)
+    labels = np.zeros(batch_size * segment_size, dtype=np.float)
 
     for i in range(batch_size//2):
         # load abnormal video
@@ -55,24 +55,46 @@ def load_dataset_batch(abnormal_list_path, normal_list_path,
 
         feat_abnormal = np.load(open(sampled_normal_list[i], 'rb'))
 
-        Data[i*2*segment_size: (i*2*segment_size + segment_size)] = \
+        data[i*2*segment_size: (i*2*segment_size + segment_size)] = \
             feat_abnormal
-        Data[(i*2*segment_size + segment_size): (i+1)*2*segment_size] = \
+        data[(i*2*segment_size + segment_size): (i+1)*2*segment_size] = \
             feat_normal
 
-        Labels[i*2*segment_size: (i*2*segment_size + segment_size)] = 1
+        labels[i*2*segment_size: (i*2*segment_size + segment_size)] = 1
 
-    return Data, Labels
+    return data, labels
+
+
+def load_one_video(test_file, log=None):
+    """ get one video features """
+    with open(test_file, "r") as fp:
+        test_list = [line.rstrip() for line in fp]
+    np.random.seed(0)
+    np.random.shuffle(test_list)
+
+    for f_vid in test_list:
+        if log:
+            log.info(f'test for {f_vid}')
+        feature = np.load(open(f_vid, "rb"))
+        yield feature
 
 
 if __name__ == "__main__":
     # test data loading
-    abnormal_path = '/home/islama6a/local/UCF_crime/\
-        custom_split/Custom_train_split_mini_abnormal.txt'
-    normal_path = '/home/islama6a/local/UCF_crime/\
-        custom_split/Custom_train_split_mini_normal.txt'
+    # abnormal_path = '/home/islama6a/local/UCF_crime/' +\
+    #         'custom_split/Custom_train_split_mini_abnormal.txt'
+    # normal_path = '/home/islama6a/local/UCF_crime/' +\
+    #     'custom_split/Custom_train_split_mini_normal.txt'
 
-    data, labels = load_dataset_batch(abnormal_path, normal_path)
+    # data, labels = load_dataset_batch(abnormal_path, normal_path)
 
-    assert data.shape == (60*32, 4095), "data shape does not match"
-    assert labels.shape == (60*32,), "label shape does not match"
+    # assert data.shape == (60*32, 4096), "data shape does not match"
+    # assert labels.shape == (60*32,), "label shape does not match"
+
+    import os
+    test_path = os.environ['HOME'] + '/dataset/UCF_crime/' +\
+        'custom_split/Custom_test_split_mini.txt'
+    test_data = load_one_video(test_path)
+    for x in test_data:
+        assert x.shape == (32, 4096), "shape does nt match"
+        break
