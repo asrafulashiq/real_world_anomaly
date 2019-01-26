@@ -1,65 +1,39 @@
 from scipy.io import loadmat, savemat
-from keras.models import model_from_json
-from pathlib import Path
 import random
 import numpy as np
-import logging
+from keras.models import model_from_json
 
 
-def load_model(json_path):  # Function to load the model
-    model = model_from_json(open(json_path).read())
+def load_model(json_path, weight_path=None):
+    """function to load model [and weight]"""
+    with open(json_path, 'r') as fp:
+        model = model_from_json(fp.read())
+    if weight_path:
+        model.load_weights(weight_path)
     return model
 
 
-def load_weights(model, weight_path):  # Function to load the model weights
-    dict2 = loadmat(weight_path)
-    dict = conv_dict(dict2)
-    i = 0
-    for layer in model.layers:
-        weights = dict[str(i)]
-        layer.set_weights(weights)
-        i += 1
+def load_weights(model, weight_path):
+    """function to load weights"""
+    model.load_weights(weight_path)
     return model
 
 
-def conv_dict(dict2):
-    i = 0
-    dict = {}
-    for i in range(len(dict2)):
-        if str(i) in dict2:
-            if dict2[str(i)].shape == (0, 0):
-                dict[str(i)] = dict2[str(i)]
-            else:
-                weights = dict2[str(i)][0]
-                weights2 = []
-                for weight in weights:
-                    if weight.shape in [(1, x) for x in range(0, 5000)]:
-                        weights2.append(weight[0])
-                    else:
-                        weights2.append(weight)
-                dict[str(i)] = weights2
-    return dict
+def save_model(model, json_path=None, weight_path=None):
+    """function to save model and weight"""
+    if json_path:
+        model_json = model.to_json()
+        with open(json_path, 'w') as fp:
+            fp.write(model_json)
+    if weight_path:
+        model.save_weights(weight_path)
 
 
-def save_model(model, json_path, weight_path):  # Function to save the model
-    json_string = model.to_json()
-    open(json_path, 'w').write(json_string)
-    dict = {}
-    i = 0
-    for layer in model.layers:
-        weights = layer.get_weights()
-        my_list = np.zeros(len(weights), dtype=np.object)
-        my_list[:] = weights
-        dict[str(i)] = my_list
-        i += 1
-    savemat(weight_path, dict)
-
-
-
-def load_dataset_batch(abnormal_list_path, normal_list_path, batch_size=60,
-                    segment_size=32, feat_size = 4096):
+def load_dataset_batch(abnormal_list_path, normal_list_path,
+                       batch_size=60, segment_size=32, feat_size=4096):
     """load abnormal and normal video for a batch.
-    for each type, feature size will be batch_size/2 * segment_size * [feature_size]
+    for each type, feature size will be \
+    batch_size/2 * segment_size * [feature_size]
     """
 
     with open(abnormal_list_path, "r") as fp:
@@ -76,21 +50,25 @@ def load_dataset_batch(abnormal_list_path, normal_list_path, batch_size=60,
 
     for i in range(batch_size//2):
         # load abnormal video
-        feat_normal = np.load(open(sampled_abnormal_list[i], 'rb')) # size : segment_size * feat_size
-        feat_abnormal = np.load(open(sampled_normal_list[i], 'rb')) # "
+        feat_normal = np.load(open(sampled_abnormal_list[i], 'rb'))
+        # size : segment_size * feat_size
+
+        feat_abnormal = np.load(open(sampled_normal_list[i], 'rb'))
 
         Data[i*2*segment_size: (i*2*segment_size + segment_size)] = feat_abnormal
-        Data[(i*2*segment_size + segment_size): (i+1)*2*segment_size] = feat_abnormal
+        Data[(i*2*segment_size + segment_size): (i+1)*2*segment_size] = feat_normal
 
         Labels[i*2*segment_size: (i*2*segment_size + segment_size)] = 1
 
     return Data, Labels
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     # test data loading
-    abnormal_path = '/home/islama6a/local/UCF_crime/custom_split/Custom_train_split_mini_abnormal.txt'
-    normal_path = '/home/islama6a/local/UCF_crime/custom_split/Custom_train_split_mini_normal.txt'
+    abnormal_path = '/home/islama6a/local/UCF_crime/\
+        custom_split/Custom_train_split_mini_abnormal.txt'
+    normal_path = '/home/islama6a/local/UCF_crime/\
+        custom_split/Custom_train_split_mini_normal.txt'
 
     data, labels = load_dataset_batch(abnormal_path, normal_path)
 
