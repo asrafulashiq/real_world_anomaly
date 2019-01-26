@@ -1,11 +1,12 @@
 """ Split all videos into training and testing
 """
 
-#%%
+
 from pathlib import Path
 from random import shuffle
 from random import sample
 import os
+
 
 _HOME = os.environ["HOME"]
 PARENT_FOLDER = Path(_HOME+"/dataset/UCF_crime")
@@ -28,7 +29,8 @@ DOWN_RATIO = 5. / 13
 print(len(LABEL_ANOMS))
 
 
-def refine_path_to_3d_path(file_path, is_normal=True, feature_name="C3D_features"):
+def refine_path_to_3d_path(file_path, is_normal=True,
+                           feature_name="C3D_features"):
     """convert file path to the path of 3d feature"""
     file_path = file_path.resolve()
     _parts = file_path.parts
@@ -40,6 +42,7 @@ def refine_path_to_3d_path(file_path, is_normal=True, feature_name="C3D_features
             "Avg" / _parts[-3] / (_parts[-1]+'.npy')
     assert base_path.exists()
     return str(base_path)
+
 
 def extract_random_files(folder_name, rat=0.2):
     """sample files of a folder into
@@ -60,8 +63,6 @@ def extract_random_files(folder_name, rat=0.2):
     return down_segments
 
 
-
-#%%
 """Split anomalous videos
 """
 train_split_path = []
@@ -96,17 +97,15 @@ print(f" Train: {len(train_split_path)}")
 
 
 file_train = split_folder / 'Custom_train_split_mini_abnormal.txt'
-file_test = split_folder / 'Custom_test_split_mini_abnormal.txt'
+# file_test = split_folder / 'Custom_test_split_mini_abnormal.txt'
 
 with file_train.open('w') as train_file:
     for item in train_split_path:
         train_file.write(f"{item}\n")
 
-with file_test.open('w') as test_file:
-    for item in test_split_path:
-        test_file.write(f"{item}\n")
-
-
+# with file_test.open('w') as test_file:
+#     for item in test_split_path:
+#         test_file.write(f"{item}\n")
 
 
 """Split Normal event
@@ -118,8 +117,8 @@ train_normal = extract_random_files(TRAIN_NORMAL_FOLDER, DOWN_RATIO)
 train_split_path = [refine_path_to_3d_path(seg, is_normal=True) for seg
                     in train_normal if seg.exists()]
 
-test_split_path = [refine_path_to_3d_path(seg, is_normal=True) for seg
-                    in test_normal if seg.exists()]
+test_split_path.extend([refine_path_to_3d_path(seg, is_normal=True) for seg
+                   in test_normal if seg.exists()])
 
 
 print("Total:")
@@ -128,7 +127,7 @@ print(f" Train: {len(train_split_path)}")
 
 
 file_train = split_folder / 'Custom_train_split_mini_normal.txt'
-file_test = split_folder / 'Custom_test_split_mini_normal.txt'
+file_test = split_folder / 'Custom_test_split_mini.txt'
 
 with file_train.open('w') as train_file:
     for item in train_split_path:

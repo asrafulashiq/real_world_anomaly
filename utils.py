@@ -1,11 +1,11 @@
-from scipy.io import loadmat, savemat
 import random
 import numpy as np
-from keras.models import model_from_json
 
 
 def load_model(json_path, weight_path=None):
     """function to load model [and weight]"""
+    from keras.models import model_from_json
+
     with open(json_path, 'r') as fp:
         model = model_from_json(fp.read())
     if weight_path:
@@ -55,8 +55,10 @@ def load_dataset_batch(abnormal_list_path, normal_list_path,
 
         feat_abnormal = np.load(open(sampled_normal_list[i], 'rb'))
 
-        Data[i*2*segment_size: (i*2*segment_size + segment_size)] = feat_abnormal
-        Data[(i*2*segment_size + segment_size): (i+1)*2*segment_size] = feat_normal
+        Data[i*2*segment_size: (i*2*segment_size + segment_size)] = \
+            feat_abnormal
+        Data[(i*2*segment_size + segment_size): (i+1)*2*segment_size] = \
+            feat_normal
 
         Labels[i*2*segment_size: (i*2*segment_size + segment_size)] = 1
 

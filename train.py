@@ -118,7 +118,8 @@ def train(abnormal_list_path, normal_list_path, output_dir,
                 f"{cur_iter}: loss : {batch_loss}")
 
         if cur_iter % 1000 == 0:  # save weight
-            weight_path = os.path.join(output_dir, 'weights-' + str(cur_iter) + '.h5')
+            weight_path = os.path.join(output_dir, 'weights-' +
+                                       str(cur_iter) + '.h5')
             save_model(model, weight_path=weight_path)
             log.debug(f'save model for iter {iter}')
 
