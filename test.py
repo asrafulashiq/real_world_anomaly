@@ -4,6 +4,8 @@ import glob
 import os
 from utils import load_model
 from dataloader import load_one_video
+from pathlib import Path
+import pickle
 
 # set logging
 logging.basicConfig()
@@ -21,8 +23,12 @@ def main():
     log.info(args)
 
     test_list = os.environ['HOME']+'/dataset/UCF_crime/' +\
-        'custom_split/Custom_test_split_mini.txt'
+        'custom_split/Custom_test_split.txt'
+    pred_path = Path('./results/predictions/')
+    pred_path.mkdir(parents=True, exist_ok=True)
 
+    assert os.path.exists(test_list), \
+        "test list file does not exist"
     model_path = args.model
     weight_path = args.weight
     if model_path is None:
@@ -36,9 +42,12 @@ def main():
 
     model = load_model(model_path, weight_path=weight_path)
 
-    for _, input in load_one_video(test_list, log=log):
+    for vid_name, input in load_one_video(test_list, log=log):
         pred = model.predict_on_batch(input)
         # import pdb; pdb.set_trace()
+        fname = pred_path / (vid_name + ".pkl")
+        with fname.open("wb") as fp:
+            pickle.dump(pred, fp, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == "__main__":

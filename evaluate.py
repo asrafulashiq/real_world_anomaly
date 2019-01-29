@@ -7,6 +7,9 @@ import re
 from utils import get_num_frame, get_frames_32_seg
 import numpy as np
 import pandas as pd
+from sklearn.metrics import roc_curve, auc
+from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 
 _HOME = os.environ['HOME']
@@ -38,7 +41,7 @@ def get_ind_from_pd(df):
 all_score_pred = np.array([])
 all_score_gt = np.array([])
 
-for pred_file in PRED_PATH.iterdir():
+for pred_file in tqdm(PRED_PATH.iterdir()):
     if pred_file.suffix != '.pkl':
         continue
     with pred_file.open('rb') as fp:
@@ -82,3 +85,18 @@ for pred_file in PRED_PATH.iterdir():
     all_score_gt = np.concatenate(
         (all_score_gt, score_gt)
     )
+
+fpr, tpr, thresholds = roc_curve(all_score_gt, all_score_pred)
+roc_auc = auc(fpr, tpr)
+
+plt.figure()
+plt.plot(fpr, tpr, color='darkorange',
+         label='ROC curve (area = %0.2f)' % roc_auc)
+plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver operating characteristic example')
+plt.legend(loc="lower right")
+plt.show()

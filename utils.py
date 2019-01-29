@@ -46,11 +46,12 @@ def save_model(model, json_path=None, weight_path=None):
         model.save_weights(weight_path)
 
 
-def get_frames_32_seg(num_frames, seg):
+def get_frames_32_seg(num_frames, seg, frames_per_seg=16):
     """ get indices when equally divide 32 segments """
     # TODO: Check if it can be modified
+    num_feat = num_frames // frames_per_seg
     thirty2_shots = np.round(
-        np.linspace(0, num_frames-1, seg+1)
+        np.linspace(0, num_feat-1, seg+1)
     ).astype(np.int)
     ind_array = []
     for counter, ishots in enumerate(range(len(thirty2_shots)-1)):
@@ -58,9 +59,9 @@ def get_frames_32_seg(num_frames, seg):
         ee = thirty2_shots[ishots+1] - 1
 
         if ss == ee or ss > ee:
-            ind = (ss, ss)
+            ind = (ss*frames_per_seg, (ss+1)*frames_per_seg-1)
         else:
-            ind = (ss, ee)
+            ind = (ss*frames_per_seg, (ee+1)*frames_per_seg-1)
         ind_array.append(ind)
     ind_array[-1] = (ind_array[-1][0], num_frames-1)
     return ind_array
