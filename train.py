@@ -142,9 +142,9 @@ def main():
     # define all path
     _HOME = os.environ['HOME']
     abnormal_list_path = _HOME + \
-        '/dataset/UCF_crime/custom_split/Custom_train_split_mini_abnormal.txt'
+        '/dataset/UCF_crime/custom_split/Custom_train_split_abnormal.txt'
     normal_list_path = _HOME + \
-        '/dataset/UCF_crime/custom_split/Custom_train_split_mini_normal.txt'
+        '/dataset/UCF_crime/custom_split/Custom_train_split_normal.txt'
 
     output_dir = 'model/trained_model'
     os.makedirs(output_dir, exist_ok=True)
