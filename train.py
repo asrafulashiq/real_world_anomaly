@@ -32,9 +32,11 @@ log.addHandler(fh)
 
 batch_size = 60
 segment_size = 32
-lambda1 = 0.00008
-lambda2 = 0.00008
+lambda1 = 8e-5
+lambda2 = 8e-5
+lambda3 = 0.01
 num_iters = 20000
+lr = 0.001
 
 
 def custom_loss(y_true, y_pred):
@@ -83,13 +85,13 @@ def create_model():
     log.debug("Create Model")
     model = Sequential()
     model.add(Dense(512, input_dim=4096, kernel_initializer='glorot_normal',
-                    kernel_regularizer=l2(0.001), activation='relu'))
+                    kernel_regularizer=l2(lambda3), activation='relu'))
     model.add(Dropout(0.6))
     model.add(Dense(32, kernel_initializer='glorot_normal',
-                    kernel_regularizer=l2(0.001)))
+                    kernel_regularizer=l2(lambda3)))
     model.add(Dropout(0.6))
     model.add(Dense(1, kernel_initializer='glorot_normal',
-                    kernel_regularizer=l2(0.001), activation='sigmoid'))
+                    kernel_regularizer=l2(lambda3), activation='sigmoid'))
     log.info("model created")
     return model
 
@@ -98,7 +100,7 @@ def train(abnormal_list_path, normal_list_path, output_dir,
           model_path, weight_path, num_iters=20000):
     """start training"""
     model = create_model()
-    adagrad = Adagrad(lr=0.01, epsilon=1e-08)  # optimizer
+    adagrad = Adagrad(lr=lr, epsilon=1e-08)  # optimizer
     model.compile(loss=custom_loss, optimizer=adagrad)
     save_model(model, model_path)
 

@@ -40,7 +40,10 @@ def main():
 
     log.info(f"Weight path: {weight_path}")
 
-    model = load_model(model_path, weight_path=weight_path)
+    # model = load_model(model_path, weight_path=weight_path)
+    import utils
+    model = load_model(model_path)
+    model = utils.load_weights_from_mat(model, './weights_L1L2.mat')
 
     for vid_name, input in load_one_video(test_list, log=log):
         pred = model.predict_on_batch(input)

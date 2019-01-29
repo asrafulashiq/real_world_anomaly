@@ -114,5 +114,3 @@ prec=tp./(fp+tp);
 AUC1 = trapz(fpr ,rec );
 % You can also use the following codes
 %[X,Y,T,AUC] = perfcurve(All_GT,All_Detect,1);
-
- 

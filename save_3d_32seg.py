@@ -53,7 +53,7 @@ for ifolder in FEATURE_3D_PATH.iterdir():  # ifolder contains 'Anomaly-Videos', 
             seg_data[counter, :] = tmp_vector
 
             if np.any(np.isnan(seg_data)) or np.any(np.isinf(seg_data)):
-                raise ValueError, "data contant nan/inf"
+                raise ValueError, "data contain nan/inf"
 
         # Write C3D features in text file to load in
         # Training_AnomalyDetector_public
