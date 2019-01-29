@@ -2,7 +2,8 @@ import logging
 import argparse
 import glob
 import os
-from utils import load_model, load_one_video
+from utils import load_model
+from dataloader import load_one_video
 
 # set logging
 logging.basicConfig()
@@ -35,7 +36,7 @@ def main():
 
     model = load_model(model_path, weight_path=weight_path)
 
-    for input in load_one_video(test_list, log=log):
+    for _, input in load_one_video(test_list, log=log):
         pred = model.predict_on_batch(input)
         # import pdb; pdb.set_trace()
 

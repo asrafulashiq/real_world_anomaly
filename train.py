@@ -8,7 +8,8 @@ import logging
 from tqdm import tqdm
 import argparse
 import datetime
-from utils import load_dataset_batch, save_model
+from utils import save_model
+from dataloader import load_dataset_batch
 
 
 # set logging

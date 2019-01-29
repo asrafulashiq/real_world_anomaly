@@ -2,7 +2,8 @@ import cv2
 import os
 import csv
 import pathlib2
-from pathlib2 import Path
+# from pathlib2 import Path
+
 
 def get_num_frame(vid_file):
     """get the number of frames in a video
@@ -36,7 +37,7 @@ def get_csv_line_video(vid_file, clip_length=16):
     return line_l
 
 
-def write_csv_for_lmdb(vid_files, csv_name,clip_length=16):
+def write_csv_for_lmdb(vid_files, csv_name, clip_length=16):
     """create csv file for lmdb
     """
     if type(vid_files) != list:
@@ -50,6 +51,7 @@ def write_csv_for_lmdb(vid_files, csv_name,clip_length=16):
         writer.writerow(['org_video', 'label', 'start_frm', 'video_id'])
         for i, line in enumerate(lines):
             writer.writerow([line[0], 0, line[1], i])
+
 
 if __name__ == "__main__":
     vid_file = '/media/ash/New Volume/dataset/UCF_crime/Anomaly-Videos/Abuse/Abuse001_x264.mp4'

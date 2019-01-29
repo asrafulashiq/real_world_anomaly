@@ -1,5 +1,22 @@
-import random
+import cv2
+import os
 import numpy as np
+
+
+def get_num_frame(vid_file):
+    """get the number of frames in a video
+
+    Arguments:
+        vid_file {string/pathlib.Path} -- video file name
+    """
+    vid_file = str(vid_file)
+
+    assert os.path.exists(vid_file), \
+        "file (%s) not found".format(vid_file)
+
+    cap = cv2.VideoCapture(vid_file)
+    length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    return length
 
 
 def load_model(json_path, weight_path=None):
@@ -29,72 +46,21 @@ def save_model(model, json_path=None, weight_path=None):
         model.save_weights(weight_path)
 
 
-def load_dataset_batch(abnormal_list_path, normal_list_path,
-                       batch_size=60, segment_size=32, feat_size=4096):
-    """load abnormal and normal video for a batch.
-    for each type, feature size will be \
-    batch_size/2 * segment_size * [feature_size]
-    """
+def get_frames_32_seg(num_frames, seg):
+    """ get indices when equally divide 32 segments """
+    # TODO: Check if it can be modified
+    thirty2_shots = np.round(
+        np.linspace(0, num_frames-1, seg+1)
+    ).astype(np.int)
+    ind_array = []
+    for counter, ishots in enumerate(range(len(thirty2_shots)-1)):
+        ss = thirty2_shots[ishots]
+        ee = thirty2_shots[ishots+1] - 1
 
-    with open(abnormal_list_path, "r") as fp:
-        abnormal_list = [line.rstrip() for line in fp]
-
-    with open(normal_list_path, "r") as fp:
-        normal_list = [line.rstrip() for line in fp]
-
-    sampled_normal_list = random.sample(normal_list, batch_size//2)
-    sampled_abnormal_list = random.sample(abnormal_list, batch_size//2)
-
-    data = np.zeros((batch_size * segment_size, feat_size), dtype=np.float)
-    labels = np.zeros(batch_size * segment_size, dtype=np.float)
-
-    for i in range(batch_size//2):
-        # load abnormal video
-        feat_normal = np.load(open(sampled_abnormal_list[i], 'rb'))
-        # size : segment_size * feat_size
-
-        feat_abnormal = np.load(open(sampled_normal_list[i], 'rb'))
-
-        data[i*2*segment_size: (i*2*segment_size + segment_size)] = \
-            feat_abnormal
-        data[(i*2*segment_size + segment_size): (i+1)*2*segment_size] = \
-            feat_normal
-
-        labels[i*2*segment_size: (i*2*segment_size + segment_size)] = 1
-
-    return data, labels
-
-
-def load_one_video(test_file, log=None):
-    """ get one video features """
-    with open(test_file, "r") as fp:
-        test_list = [line.rstrip() for line in fp]
-    np.random.seed(0)
-    np.random.shuffle(test_list)
-
-    for f_vid in test_list:
-        if log:
-            log.info(f'test for {f_vid}')
-        feature = np.load(open(f_vid, "rb"))
-        yield feature
-
-
-if __name__ == "__main__":
-    # test data loading
-    # abnormal_path = '/home/islama6a/local/UCF_crime/' +\
-    #         'custom_split/Custom_train_split_mini_abnormal.txt'
-    # normal_path = '/home/islama6a/local/UCF_crime/' +\
-    #     'custom_split/Custom_train_split_mini_normal.txt'
-
-    # data, labels = load_dataset_batch(abnormal_path, normal_path)
-
-    # assert data.shape == (60*32, 4096), "data shape does not match"
-    # assert labels.shape == (60*32,), "label shape does not match"
-
-    import os
-    test_path = os.environ['HOME'] + '/dataset/UCF_crime/' +\
-        'custom_split/Custom_test_split_mini.txt'
-    test_data = load_one_video(test_path)
-    for x in test_data:
-        assert x.shape == (32, 4096), "shape does nt match"
-        break
+        if ss == ee or ss > ee:
+            ind = (ss, ss)
+        else:
+            ind = (ss, ee)
+        ind_array.append(ind)
+    ind_array[-1] = (ind_array[-1][0], num_frames-1)
+    return ind_array

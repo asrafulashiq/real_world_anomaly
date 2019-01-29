@@ -2,4 +2,5 @@
 *.pkl
 *.h5
 model/*
-.backup/*
+.backup/
+__pycache__/
