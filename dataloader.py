@@ -25,10 +25,10 @@ def load_dataset_batch(abnormal_list_path, normal_list_path,
 
     for i in range(batch_size//2):
         # load abnormal video
-        feat_normal = np.load(open(sampled_abnormal_list[i], 'rb'))
+        feat_abnormal = np.load(open(sampled_abnormal_list[i], 'rb'))
         # size : segment_size * feat_size
 
-        feat_abnormal = np.load(open(sampled_normal_list[i], 'rb'))
+        feat_normal = np.load(open(sampled_normal_list[i], 'rb'))
 
         data[i*2*segment_size: (i*2*segment_size + segment_size)] = \
             feat_abnormal
