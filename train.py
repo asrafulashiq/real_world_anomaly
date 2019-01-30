@@ -17,8 +17,6 @@ logging.basicConfig()
 log = logging.getLogger("train")
 log.setLevel(logging.INFO)
 
-log.addHandler(fh)
-
 
 """ default hyper-parameters """
 
@@ -157,9 +155,9 @@ def main():
     fh = logging.FileHandler(
         'logs/logging_'+log_file+flag_split+'.log')
     fh.setLevel(logging.DEBUG)
-
     formatter = logging.Formatter('%(asctime)s - %(levelname)s: %(message)s')
     fh.setFormatter(formatter)
+    log.addHandler(fh)
 
     abnormal_list_path = _HOME + \
         '/dataset/UCF_crime/custom_split' + flag_split +\
