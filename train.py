@@ -17,14 +17,6 @@ logging.basicConfig()
 log = logging.getLogger("train")
 log.setLevel(logging.INFO)
 
-# create file handler which logs even debug messages
-now = datetime.datetime.now()
-log_file = now.strftime("%m_%d")
-fh = logging.FileHandler('logs/logging_'+log_file+'.log')
-fh.setLevel(logging.DEBUG)
-
-formatter = logging.Formatter('%(asctime)s - %(levelname)s: %(message)s')
-fh.setFormatter(formatter)
 log.addHandler(fh)
 
 
@@ -135,6 +127,10 @@ def main():
                         help='total iteration')
     parser.add_argument("--gpus", type=str, default="0,1",
                         help="Comma separated list of GPU devices to use")
+    parser.add_argument("--c3d", type=str, default="true",
+                        help="Extract C3D features?")
+    parser.add_argument("--mini", type=str, default="false",
+                        help="Whether to use mini data")
     args = parser.parse_args()
     log.info(args)
 
@@ -143,12 +139,35 @@ def main():
 
     # define all path
     _HOME = os.environ['HOME']
-    abnormal_list_path = _HOME + \
-        '/dataset/UCF_crime/custom_split/Custom_train_split_abnormal.txt'
-    normal_list_path = _HOME + \
-        '/dataset/UCF_crime/custom_split/Custom_train_split_normal.txt'
+    if args.c3d == 'true':
+        output_dir = 'model/trained_model/C3D'
+        flag_split = ""
+    else:
+        output_dir = 'model/trained_model/3D'
+        flag_split = "_3d"
 
-    output_dir = 'model/trained_model'
+    if args.mini == "true":
+        flag_mini = "_mini"
+    else:
+        flag_mini = ""
+
+    # create file handler which logs even debug messages
+    now = datetime.datetime.now()
+    log_file = now.strftime("%m_%d")
+    fh = logging.FileHandler(
+        'logs/logging_'+log_file+flag_split+'.log')
+    fh.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s: %(message)s')
+    fh.setFormatter(formatter)
+
+    abnormal_list_path = _HOME + \
+        '/dataset/UCF_crime/custom_split' + flag_split +\
+        '/Custom_train_split' + flag_mini + '_abnormal.txt'
+    normal_list_path = _HOME + \
+        '/dataset/UCF_crime/custom_split' + flag_split +\
+        '/Custom_train_split' + flag_mini + '_normal.txt'
+
     os.makedirs(output_dir, exist_ok=True)
 
     assert os.path.exists(abnormal_list_path), \

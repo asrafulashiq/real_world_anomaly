@@ -7,13 +7,21 @@ import re
 from utils import get_num_frame, get_frames_32_seg
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_curve, auc, roc_auc_score
+from sklearn.metrics import roc_curve, auc
 from matplotlib import pyplot as plt
 from tqdm import tqdm
+import argparse
+
+
+parser = argparse.ArgumentParser(description="Training anomaly detection")
+parser.add_argument("--pred", type=str,
+                    default="./results/predictions/C3D/",
+                    help="path to save predictions")
+args = parser.parse_args()
 
 
 _HOME = os.environ['HOME']
-PRED_PATH = Path('./results/predictions/')
+PRED_PATH = Path(args.pred)
 DATA_HOME = Path(_HOME + '/dataset/UCF_crime/')
 ANOM_DIR = DATA_HOME / "Anomaly-Videos"
 TEST_NORM_DIR = DATA_HOME / "Testing_Normal_Videos_Anomaly"
@@ -106,17 +114,17 @@ for pred_file in tqdm(PRED_PATH.iterdir()):
 fpr, tpr, thresholds = roc_curve(all_score_gt, all_score_pred)
 roc_auc = auc(fpr, tpr)
 print(f"AUC: {roc_auc}")
-# plt.figure()
-# plt.plot(fpr, tpr, color='darkorange',
-#          label='ROC curve (area = %0.2f)' % roc_auc)
-# plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
-# plt.xlim([0.0, 1.0])
-# plt.ylim([0.0, 1.05])
-# plt.xlabel('False Positive Rate')
-# plt.ylabel('True Positive Rate')
-# plt.title('Receiver operating characteristic example')
-# plt.legend(loc="lower right")
-# plt.show()
+plt.figure()
+plt.plot(fpr, tpr, color='darkorange',
+         label='ROC curve (area = %0.2f)' % roc_auc)
+plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver operating characteristic example')
+plt.legend(loc="lower right")
+plt.show()
 
 # get false alarm for normal
 false_alarm = sum(norm_score_pred > 0.5) / len(norm_score_pred)

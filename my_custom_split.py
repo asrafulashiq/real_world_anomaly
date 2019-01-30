@@ -11,23 +11,20 @@ from collections import defaultdict
 _HOME = os.environ["HOME"]
 PARENT_FOLDER = Path(_HOME+"/dataset/UCF_crime")
 
-
-split_folder = PARENT_FOLDER / "custom_split"
-split_folder.mkdir(exist_ok=True)
-
 orig_split_train = PARENT_FOLDER / "Anomaly_Detection_splits/Anomaly_Train.txt"
 orig_split_test = PARENT_FOLDER / "Anomaly_Detection_splits/Anomaly_Test.txt"
 
-feature_name = "C3D_features"
+feature_name = "3D_features"
 feature_folder = PARENT_FOLDER / feature_name / "Avg"
+split_folder = PARENT_FOLDER / "custom_split_3d"
+split_folder.mkdir(exist_ok=True)
 
+LABEL_ANOMS = ['Abuse', 'Arrest', 'Arson', 'Assault', 'Burglary',
+               'Explosion', 'Fighting', 'RoadAccidents', 'Robbery',
+               'Shooting', 'Shoplifting', 'Stealing', 'Vandalism']
 
-# LABEL_ANOMS = ['Abuse', 'Arrest', 'Arson', 'Assault', 'Burglary',
-#                'Explosion', 'Fighting', 'RoadAccidents', 'Robbery',
-#                'Shooting', 'Shoplifting', 'Stealing', 'Vandalism']
-
-LABEL_ANOMS = ['Abuse', 'Arrest', 'Arson', 'Assault', 'Burglary']
-DOWN_RATIO = 5. / 13  # or None
+# LABEL_ANOMS = ['Abuse', 'Arrest', 'Arson', 'Assault', 'Burglary']
+DOWN_RATIO = None
 
 
 """ create dict """
