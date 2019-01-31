@@ -26,8 +26,15 @@ def main():
     parser.add_argument("--pred", type=str,
                         default="./results/predictions/C3D/",
                         help="path to save predictions")
+    parser.add_argument("--c3d", type=str, default="true",
+                        help="Extract C3D features?")
     args = parser.parse_args()
     log.info(args)
+
+    if args.c3d == 'true':
+        flag_split = ""
+    else:
+        flag_split = "_3d"
 
     if args.mini == "true":
         flag_mini = "_mini"
@@ -35,7 +42,7 @@ def main():
         flag_mini = ""
 
     test_list = os.environ['HOME']+'/dataset/UCF_crime/' +\
-        'custom_split/Custom_test_split' + flag_mini + '.txt'
+        'custom_split'+flag_split+'/Custom_test_split' + flag_mini + '.txt'
 
     pred_path = Path(args.pred)
     pred_path.mkdir(parents=True, exist_ok=True)

@@ -103,9 +103,9 @@ print(f" Anomaly: {len(anom_train)}")
 print(f" Normal: {len(normal_train)}")
 print(f"Test: {len(all_test)}")
 
-file_train_anom = split_folder / 'Custom_train_split_mini_abnormal.txt'
-file_train_normal = split_folder / 'Custom_train_split_mini_normal.txt'
-file_test = split_folder / 'Custom_test_split_mini.txt'
+file_train_anom = split_folder / 'Custom_train_split_abnormal.txt'
+file_train_normal = split_folder / 'Custom_train_split_normal.txt'
+file_test = split_folder / 'Custom_test_split.txt'
 
 with file_train_anom.open("w") as fp:
     fp.writelines(os.linesep.join(anom_train))

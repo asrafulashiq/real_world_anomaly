@@ -69,6 +69,23 @@ def custom_loss(y_true, y_pred):
     return total_loss
 
 
+def create_model_3d():
+    """ define model for less input dim """
+
+    log.debug("Create Model")
+    model = Sequential()
+    model.add(Dense(512, input_dim=512, kernel_initializer='glorot_normal',
+                    kernel_regularizer=l2(lambda3), activation='relu'))
+    model.add(Dropout(0.6))
+    model.add(Dense(32, kernel_initializer='glorot_normal',
+                    kernel_regularizer=l2(lambda3)))
+    model.add(Dropout(0.6))
+    model.add(Dense(1, kernel_initializer='glorot_normal',
+                    kernel_regularizer=l2(lambda3), activation='sigmoid'))
+    log.info("model created")
+    return model
+
+
 def create_model():
     """ define model """
 
@@ -87,9 +104,14 @@ def create_model():
 
 
 def train(abnormal_list_path, normal_list_path, output_dir,
-          model_path, weight_path, num_iters=20000):
+          model_path, weight_path, num_iters=20000, flag_split=""):
     """start training"""
-    model = create_model()
+    if flag_split == "":
+        model = create_model()
+        feat_size = 4096
+    else:
+        model = create_model_3d()
+        feat_size = 512
     adagrad = Adagrad(lr=lr, epsilon=1e-08)  # optimizer
     model.compile(loss=custom_loss, optimizer=adagrad)
     save_model(model, model_path)
@@ -100,7 +122,8 @@ def train(abnormal_list_path, normal_list_path, output_dir,
     for cur_iter in tqdm(range(num_iters)):
         # get one batch
         inputs, labels = load_dataset_batch(abnormal_list_path,
-                                            normal_list_path)
+                                            normal_list_path,
+                                            feat_size=feat_size)
 
         # train on a batch
         batch_loss = model.train_on_batch(inputs, labels)
@@ -178,7 +201,7 @@ def main():
 
     # start training
     train(abnormal_list_path, normal_list_path, output_dir,
-          model_path, weight_path, num_iters)
+          model_path, weight_path, num_iters, flag_split)
 
 
 if __name__ == "__main__":

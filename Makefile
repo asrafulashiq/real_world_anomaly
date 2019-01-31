@@ -36,6 +36,7 @@ train-3d:
 test-3d:
 	python test.py --weight=./model/trained_model/3D/ \
 		--model=./model/trained_model/3D/model.json \
+		--c3d=false \
 		--pred=./results/predictions/3D/
 
 eval-3d:
