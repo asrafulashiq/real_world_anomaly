@@ -6,6 +6,13 @@ C3D:	lr-0.001	lambda-0.01
 	 precision: 21.367885745607357
 	 recall: 33.283134315969214
 
+mini:
+	AUC: 0.7210928108364338
+	Normal video:
+	False alarm for +ve: 2.5119239333954893
+	Abnormal video:
+	precision: 19.67603060615379
+	recall: 25.797156443063642
 
 
 R(2+1)D:	lr-0.001	lambda-0.01
