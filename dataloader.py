@@ -40,6 +40,46 @@ def load_dataset_batch(abnormal_list_path, normal_list_path,
     return data, labels
 
 
+def load_dataset_batch_with_segment(abnormal_list_path,
+                                    normal_list_path, batch_size=60,
+                                    segment_size=32, feat_size=4096):
+    """load abnormal and normal video for a batch.
+    for each type, feature size will be \
+    batch_size/2 * segment_size * [feature_size]
+    """
+
+    with open(abnormal_list_path, "r") as fp:
+        abnormal_list = [line.rstrip() for line in fp]
+
+    with open(normal_list_path, "r") as fp:
+        normal_list = [line.rstrip() for line in fp]
+
+    sampled_normal_list = random.sample(normal_list, batch_size//2)
+    sampled_abnormal_list = random.sample(abnormal_list, batch_size//2)
+
+    data = np.zeros((batch_size, segment_size, feat_size), dtype=np.float)
+    # labels = np.zeros(batch_size, dtype=np.float)
+
+    for i in range(batch_size//2):
+        # load abnormal video
+        feat_abnormal = np.load(open(sampled_abnormal_list[i], 'rb'))
+        # size : segment_size * feat_size
+
+        feat_normal = np.load(open(sampled_normal_list[i], 'rb'))
+
+        data[i*2] = feat_abnormal
+        data[i*2+1] = feat_normal
+
+        # labels[i*2*segment_size: (i*2*segment_size + segment_size)] = 1
+
+    labels = np.tile(
+        np.array([1, 0], dtype=np.float),
+        batch_size // 2
+    )
+
+    return data, labels
+
+
 def load_one_video(test_file, log=None):
     """ get one video features """
     with open(test_file, "r") as fp:

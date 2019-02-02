@@ -1,4 +1,3 @@
-from keras.optimizers import Adagrad
 import os
 import logging
 from tqdm import tqdm
@@ -6,8 +5,13 @@ import argparse
 import datetime
 from utils import save_model
 from dataloader import load_dataset_batch
-from models import custom_loss, create_model, create_model_3d
+from dataloader import load_dataset_batch_with_segment
+from models import get_compiled_model
 
+
+lambda3 = 0.01
+batch_size = 60
+segment_size = 32
 
 # set logging
 logging.basicConfig()
@@ -15,28 +19,25 @@ log = logging.getLogger("train")
 log.setLevel(logging.INFO)
 
 
-""" default hyper-parameters """
-
-batch_size = 60
-segment_size = 32
-lambda1 = 8e-5
-lambda2 = 8e-5
-lambda3 = 0.01
-num_iters = 20000
-lr = 0.001
-
-
 def train(abnormal_list_path, normal_list_path, output_dir,
-          model_path, weight_path, num_iters=20000, flag_split=""):
+          model_path, weight_path, num_iters=20000, model_type="c3d"):
     """start training"""
-    if flag_split == "":
-        model = create_model()
+    _load = load_dataset_batch
+    if model_type == "c3d":
         feat_size = 4096
+    elif model_type == "c3d-attn":
+        feat_size = 4096
+        _load = load_dataset_batch_with_segment
     else:
-        model = create_model_3d()
         feat_size = 512
-    adagrad = Adagrad(lr=lr, epsilon=1e-08)  # optimizer
-    model.compile(loss=custom_loss, optimizer=adagrad)
+
+    model = get_compiled_model(
+        segment_size, feat_size, lambda3, model_type
+    )
+
+    log.info(model.summary())
+
+    log.info(f"saving model in {model_path}")
     save_model(model, model_path)
 
     log.info("Iteration started")
@@ -44,9 +45,9 @@ def train(abnormal_list_path, normal_list_path, output_dir,
 
     for cur_iter in tqdm(range(num_iters)):
         # get one batch
-        inputs, labels = load_dataset_batch(abnormal_list_path,
-                                            normal_list_path,
-                                            feat_size=feat_size)
+        inputs, labels = _load(abnormal_list_path,
+                               normal_list_path,
+                               feat_size=feat_size)
 
         # train on a batch
         batch_loss = model.train_on_batch(inputs, labels)
@@ -71,7 +72,8 @@ def main():
                         help='total iteration')
     parser.add_argument("--gpus", type=str, default="0,1",
                         help="Comma separated list of GPU devices to use")
-    parser.add_argument("--c3d", type=str, default="true",
+    parser.add_argument("--model-type", '-m', dest='model_type',
+                        type=str, default="c3d",
                         help="Extract C3D features?")
     parser.add_argument("--mini", type=str, default="false",
                         help="Whether to use mini data")
@@ -83,12 +85,15 @@ def main():
 
     # define all path
     _HOME = os.environ['HOME']
-    if args.c3d == 'true':
+    if args.model_type == 'c3d':
         output_dir = 'model/trained_model/C3D'
         flag_split = ""
-    else:
+    elif args.model_type == '3d':
         output_dir = 'model/trained_model/3D'
         flag_split = "_3d"
+    elif args.model_type == 'c3d-attn':
+        output_dir = 'model/trained_model/C3D_attn'
+        flag_split = ""
 
     if args.mini == "true":
         flag_mini = "_mini"
@@ -99,7 +104,8 @@ def main():
     now = datetime.datetime.now()
     log_file = now.strftime("%m_%d")
     fh = logging.FileHandler(
-        'logs/logging_'+log_file+flag_split+'.log')
+        'logs/logging_' + log_file +
+        '_' + args.model_type + flag_mini + '.log')
     fh.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s: %(message)s')
     fh.setFormatter(formatter)
@@ -124,7 +130,7 @@ def main():
 
     # start training
     train(abnormal_list_path, normal_list_path, output_dir,
-          model_path, weight_path, num_iters, flag_split)
+          model_path, weight_path, num_iters, args.model_type)
 
 
 if __name__ == "__main__":

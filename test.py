@@ -26,14 +26,15 @@ def main():
     parser.add_argument("--pred", type=str,
                         default="./results/predictions/C3D/",
                         help="path to save predictions")
-    parser.add_argument("--c3d", type=str, default="true",
+    parser.add_argument("--model-type", dest='model_type',
+                        type=str, default="c3d",
                         help="Extract C3D features?")
     args = parser.parse_args()
     log.info(args)
 
-    if args.c3d == 'true':
+    if args.model_type == 'c3d' or args.model_type == 'c3d-attn':
         flag_split = ""
-    else:
+    elif args.model_type == '3d':
         flag_split = "_3d"
 
     if args.mini == "true":
@@ -68,12 +69,9 @@ def main():
     log.info(f"Weight path: {weight_path}")
 
     model = load_model(model_path, weight_path=weight_path)
-    # import utils
-    # model = load_model(model_path)
-    # model = utils.load_weights_from_mat(model, './weights_L1L2.mat')
 
-    for vid_name, input in load_one_video(test_list, log=log):
-        pred = model.predict_on_batch(input)
+    for vid_name, _input in load_one_video(test_list, log=log):
+        pred = model.predict_on_batch(_input)
         # import pdb; pdb.set_trace()
         fname = pred_path / (vid_name + ".pkl")
         with fname.open("wb") as fp:
