@@ -85,20 +85,20 @@ def main():
 
     # define all path
     _HOME = os.environ['HOME']
-    if args.model_type == 'c3d':
-        output_dir = 'model/trained_model/C3D'
-        flag_split = ""
-    elif args.model_type == '3d':
-        output_dir = 'model/trained_model/3D'
-        flag_split = "_3d"
-    elif args.model_type == 'c3d-attn':
-        output_dir = 'model/trained_model/C3D_attn'
-        flag_split = ""
-
     if args.mini == "true":
         flag_mini = "_mini"
     else:
         flag_mini = ""
+
+    if args.model_type == 'c3d':
+        output_dir = 'model/trained_model'+flag_mini+'/C3D'
+        flag_split = ""
+    elif args.model_type == '3d':
+        output_dir = 'model/trained_model'+flag_mini+'/3D'
+        flag_split = "_3d"
+    elif args.model_type == 'c3d-attn':
+        output_dir = 'model/trained_model'+flag_mini+'/C3D_attn'
+        flag_split = ""
 
     # create file handler which logs even debug messages
     now = datetime.datetime.now()

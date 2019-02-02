@@ -15,7 +15,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description="Training anomaly detection")
 parser.add_argument("--pred", type=str,
-                    default="./results/predictions/C3D/",
+                    default="./results/predictions/C3D_attn/",
                     help="path to save predictions")
 args = parser.parse_args()
 

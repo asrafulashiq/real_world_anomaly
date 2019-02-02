@@ -6,6 +6,9 @@ from utils import load_model
 from dataloader import load_one_video
 from pathlib import Path
 import pickle
+from keras import Model
+import numpy as np
+
 
 # set logging
 logging.basicConfig()
@@ -70,14 +73,20 @@ log.info(f"Weight path: {weight_path}")
 
 model = load_model(model_path, weight_path=weight_path)
 
-model.output = model.get_layer(name='score')
+# model.output = model.get_layer(name='score')
+
+pred_model = Model(inputs=model.input, outputs=[
+    model.output, model.get_layer(name='score').output
+])
+
 
 for vid_name, _input in load_one_video(test_list, log=log):
-    pred = model.predict_on_batch(_input)
+    inp = np.expand_dims(_input, axis=0)
+    pred_all, pred = pred_model.predict(inp)
     # import pdb; pdb.set_trace()
     fname = pred_path / (vid_name + ".pkl")
     with fname.open("wb") as fp:
-        pickle.dump(pred, fp, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(pred.squeeze(), fp, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 # if __name__ == "__main__":
