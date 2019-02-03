@@ -7,7 +7,8 @@ import re
 from utils import get_num_frame, get_frames_32_seg
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, auc, roc_auc_score
+from sklearn.metrics import classification_report, accuracy_score
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 import argparse
@@ -15,7 +16,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description="Training anomaly detection")
 parser.add_argument("--pred", type=str,
-                    default="./results/predictions/C3D/",
+                    default="./results/predictions/C3D_attn/",
                     help="path to save predictions")
 args = parser.parse_args()
 
@@ -54,11 +55,14 @@ norm_score_gt = np.array([])
 abn_score_pred = np.array([])
 abn_score_gt = np.array([])
 
+vid_level_gt = []
+vid_level_pred = []
+
 for pred_file in tqdm(PRED_PATH.iterdir()):
     if pred_file.suffix != '.pkl':
         continue
     with pred_file.open('rb') as fp:
-        _pred = pickle.load(fp)
+        _pred_all, _pred = pickle.load(fp)
 
     # search this pred_file video
     vid_name = pred_file.stem  # remove suffix from file name
@@ -106,33 +110,36 @@ for pred_file in tqdm(PRED_PATH.iterdir()):
         # print()
         abn_score_gt = np.concatenate((abn_score_gt, score_gt))
         abn_score_pred = np.concatenate((abn_score_pred, score_pred))
+
+        vid_level_gt.append(1)
     else:
         # norm_score_gt = np.concatenate((norm_score_gt, score_gt))
         norm_score_pred = np.concatenate((norm_score_pred, score_pred))
+        vid_level_gt.append(0)
+    vid_level_pred.append(_pred_all)
 
 
 fpr, tpr, thresholds = roc_curve(all_score_gt, all_score_pred)
 roc_auc = auc(fpr, tpr)
-print(f"AUC: {roc_auc}")
-plt.figure()
-plt.plot(fpr, tpr, color='darkorange',
-         label='ROC curve (area = %0.2f)' % roc_auc)
-plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('Receiver operating characteristic example')
-plt.legend(loc="lower right")
-plt.show()
-
 
 optimal_idx = np.argmax(tpr - fpr)
 optimal_threshold = thresholds[optimal_idx]
-print("Threshold :", optimal_threshold)
-
+print(f"AUC: {roc_auc}")
+# plt.figure()
+# plt.plot(fpr, tpr, color='darkorange',
+#          label='ROC curve (area = %0.2f)' % roc_auc)
+# plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+# plt.xlim([0.0, 1.0])
+# plt.ylim([0.0, 1.05])
+# plt.xlabel('False Positive Rate')
+# plt.ylabel('True Positive Rate')
+# plt.title('Receiver operating characteristic example')
+# plt.legend(loc="lower right")
+# plt.show()
 
 # get false alarm for normal
+optimal_threshold = 0.5
+print("Threshold :", optimal_threshold)
 false_alarm = sum(norm_score_pred > optimal_threshold) / len(norm_score_pred)
 print("Normal video:")
 print(f" False alarm for +ve: {false_alarm*100}")
@@ -144,3 +151,26 @@ prec = sum(abn_score_pred[p_ind] > optimal_threshold) / \
     sum(abn_score_pred > optimal_threshold)
 print("Abnormal video:")
 print(f" precision: {prec*100}\n recall: {recall*100}")
+
+# video level prediction
+
+print("\nVideo")
+
+
+vid_level_gt = np.array(vid_level_gt)
+vid_level_pred = np.array(vid_level_pred)
+
+fpr, tpr, thresholds = roc_curve(vid_level_gt, vid_level_pred)
+roc_auc = auc(fpr, tpr)
+
+optimal_idx = np.argmax(tpr - fpr)
+optimal_threshold = thresholds[optimal_idx]
+
+print("AUC :", roc_auc)
+print("Threshold :", optimal_threshold)
+
+vid_level_pred[vid_level_pred >= optimal_threshold] = 1
+vid_level_pred[vid_level_pred < optimal_threshold] = 0
+
+print(classification_report(vid_level_gt, vid_level_pred))
+print("Accuracy: ", accuracy_score(vid_level_gt, vid_level_pred))

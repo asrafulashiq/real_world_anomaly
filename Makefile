@@ -33,7 +33,7 @@ train-3d:
 		--model-type=3d
 
 train-3d-mini:
-	python train.py --model-type=3d \
+	python train.py\
 		--gpus=0,1 --mini=true\
 		--iter=20000 \
 		--model-type=3d

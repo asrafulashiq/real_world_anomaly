@@ -2,6 +2,7 @@ import random
 import numpy as np
 import os
 from pathlib import Path
+import pandas as pd
 
 
 def load_dataset_batch(abnormal_list_path, normal_list_path,
@@ -80,7 +81,7 @@ def load_dataset_batch_with_segment(abnormal_list_path,
     return data, labels
 
 
-def load_one_video(test_file, log=None):
+def load_one_video(test_file, log=None, valid=False):
     """ get one video features """
     with open(test_file, "r") as fp:
         test_list = [line.rstrip() for line in fp]
@@ -91,9 +92,43 @@ def load_one_video(test_file, log=None):
         if log:
             log.info(f'test for {f_vid}')
         feature = np.load(open(f_vid, "rb"))
-
+        if valid:
+            _path = Path(f_vid).stem
+        else:
+            _path = Path(f_vid).stem
         # return video name and features
-        yield Path(f_vid).stem, feature
+        yield _path, feature
+
+
+def get_ind_from_pd(df):
+    # print(df.head())
+    indices = list(df.iloc[0, 2:])
+    ret_ind = []
+    for k in range(0, len(indices)-1, 2):
+        if indices[k] == -1:
+            continue
+        ret_ind.append((indices[k], indices[k+1]))
+    return ret_ind
+
+
+def load_valid_batch(valid_list_file, tmp_ann_file):
+    """get validation data of batch size batch"""
+
+    df_temp_ann = pd.read_csv(
+        tmp_ann_file,
+        delimiter=" ",
+        header=None,
+        skipinitialspace=True
+    )
+
+    while True:
+        for vid_file, valid_feat in load_one_video(
+                                    valid_list_file, valid=True):
+            # vid_name = vid_file.stem
+            x_row = df_temp_ann.loc[df_temp_ann[0] == vid_file]
+            gt_ind = get_ind_from_pd(x_row)
+
+            yield vid_file, gt_ind, valid_feat
 
 
 if __name__ == "__main__":

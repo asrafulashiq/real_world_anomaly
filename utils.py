@@ -1,6 +1,7 @@
 import cv2
 import os
 import numpy as np
+from sklearn.metrics import roc_auc_score
 
 
 def get_num_frame(vid_file):
@@ -97,3 +98,36 @@ def get_frames_32_seg(num_frames, seg, frames_per_seg=16):
         ind_array.append(ind)
     ind_array[-1] = (ind_array[-1][0], num_frames-1)
     return ind_array
+
+
+def valid_res(list_gt_ind, list_gt_pred, list_vid_path, dict_frame, seg=32):
+    """calculate validation result """
+    all_score_pred = np.array([])
+    all_score_gt = np.array([])
+    for gt_ind, gt_pred, vid_path in zip(list_gt_ind, list_gt_pred,
+                                         list_vid_path):
+        num_frames = dict_frame[vid_path]
+        indices = get_frames_32_seg(num_frames, seg)
+        score_pred = np.zeros(num_frames)
+        for counter, ind in enumerate(indices):
+            start_ind = ind[0]
+            end_ind = ind[1]
+            score_pred[start_ind:end_ind+1] = gt_pred[counter]
+
+        all_score_pred = np.concatenate(
+            (all_score_pred, score_pred)
+        )
+
+        # get gt score for each frame
+        score_gt = np.zeros(num_frames)
+        for counter, ind in enumerate(gt_ind):
+            start_ind = ind[0]
+            end_ind = ind[1]
+            score_gt[start_ind:end_ind+1] = 1
+
+        all_score_gt = np.concatenate(
+            (all_score_gt, score_gt)
+        )
+
+    roc_auc = roc_auc_score(all_score_gt, all_score_pred)
+    return roc_auc

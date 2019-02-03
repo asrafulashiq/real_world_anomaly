@@ -4,6 +4,7 @@ from keras.layers import Dense, Dropout, Input, multiply, Lambda
 from keras import backend as K
 from keras.models import Model
 from keras.optimizers import Adagrad
+from keras.layers import Activation, Flatten, Reshape
 
 
 # default hyper-parameters
@@ -101,11 +102,15 @@ def create_model_with_attention(segment_size=32, lamb=0.01, feat_size=4096):
 
     x = Dense(512, activation='relu')(inputs)
     x = Dense(32, activation='relu')(x)
-    x_score = Dense(1, activation='sigmoid', name='score')(x)
-    y = multiply([inputs, x_score])
+    x = Dense(1)(x)
+    x = Flatten()(x)
+    x_score = Activation('softmax', name='score')(x)
+    # x_soft = K.expand_dims(x_score, axis=-1)
+    x_soft = Reshape((segment_size, 1))(x_score)
+    y = multiply([inputs, x_soft])
 
     y = Lambda(
-        lambda z: K.sum(z, axis=1)
+        lambda z: K.sum(z, axis=-2)
     )(y)
 
     # classification model

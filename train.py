@@ -4,9 +4,11 @@ from tqdm import tqdm
 import argparse
 import datetime
 from utils import save_model
-from dataloader import load_dataset_batch
+from dataloader import load_dataset_batch, load_valid_batch
 from dataloader import load_dataset_batch_with_segment
 from models import get_compiled_model
+import numpy as np
+import pickle
 
 
 lambda3 = 0.01
@@ -20,7 +22,8 @@ log.setLevel(logging.INFO)
 
 
 def train(abnormal_list_path, normal_list_path, output_dir,
-          model_path, weight_path, num_iters=20000, model_type="c3d"):
+          model_path, weight_path, num_iters=20000, model_type="c3d",
+          validation=False):
     """start training"""
     _load = load_dataset_batch
     if model_type == "c3d":
@@ -35,6 +38,9 @@ def train(abnormal_list_path, normal_list_path, output_dir,
         segment_size, feat_size, lambda3, model_type
     )
 
+    # import pdb
+    # pdb.set_trace()
+
     log.info(model.summary())
 
     log.info(f"saving model in {model_path}")
@@ -42,6 +48,27 @@ def train(abnormal_list_path, normal_list_path, output_dir,
 
     log.info("Iteration started")
     losses = []
+
+    if validation:
+        from keras import Model
+        from utils import valid_res
+        valid_list_file = (
+            '/media/ash/New Volume/dataset/UCF_crime/'
+            'custom_split/Custom_test_split_mini.txt')
+        tmp_ann_file = './Temporal_Anomaly_Annotation.txt'
+        valid_gen = load_valid_batch(
+            valid_list_file,
+            tmp_ann_file
+        )
+        model_valid = Model(
+            inputs=model.input,
+            outputs=[
+                model.output,
+                model.get_layer(name='score').output
+            ]
+        )
+        with open("./frame_num.pkl", "rb") as fp:
+            dict_frame = pickle.load(fp)
 
     for cur_iter in tqdm(range(num_iters)):
         # get one batch
@@ -53,15 +80,41 @@ def train(abnormal_list_path, normal_list_path, output_dir,
         batch_loss = model.train_on_batch(inputs, labels)
         losses.append(batch_loss)
 
-        if cur_iter % 20 == 0:  # logging
+        if (cur_iter+1) % 20 == 0:  # logging
             log.info(
-                f"{cur_iter}: loss : {batch_loss}")
+                f"{cur_iter+1}: loss : {batch_loss}")
 
-        if cur_iter % 1000 == 0:  # save weight
+        if (cur_iter+1) % 1000 == 0:  # save weight
             weight_path = os.path.join(output_dir, 'weights-' +
                                        str(cur_iter) + '.h5')
             save_model(model, weight_path=weight_path)
-            log.debug(f'save model for iter {iter}')
+            log.debug(f'save model at iteration {cur_iter+1}')
+
+        if (cur_iter+1) % 1000 == 0 and validation:  # validation
+            valid_batch = 50
+
+            list_gt_ind = []
+            list_gt_pred = []
+            list_vid_path = []
+            for i_valid, (vid_file, gt_ind, val_x) in enumerate(valid_gen):
+                val_x = np.expand_dims(val_x, axis=0)
+                pred_all, pred_x = model_valid.predict_on_batch(val_x)
+                pred_x = pred_x.squeeze()
+
+                list_gt_ind.append(gt_ind)
+                list_gt_pred.append(pred_x)
+                list_vid_path.append(vid_file)
+                if i_valid == valid_batch - 1:
+                    break
+            auc_score = valid_res(
+                list_gt_ind,
+                list_gt_pred,
+                list_vid_path,
+                dict_frame,
+                seg=32
+            )
+            log.info("\nValidation result")
+            log.info("  AUC: {}\n".format(auc_score))
 
 
 def main():
@@ -73,9 +126,9 @@ def main():
     parser.add_argument("--gpus", type=str, default="0,1",
                         help="Comma separated list of GPU devices to use")
     parser.add_argument("--model-type", '-m', dest='model_type',
-                        type=str, default="c3d",
+                        type=str, default="c3d-attn",
                         help="Extract C3D features?")
-    parser.add_argument("--mini", type=str, default="false",
+    parser.add_argument("--mini", type=str, default="true",
                         help="Whether to use mini data")
     args = parser.parse_args()
     log.info(args)
@@ -102,7 +155,8 @@ def main():
 
     # create file handler which logs even debug messages
     now = datetime.datetime.now()
-    log_file = now.strftime("%m_%d")
+    log_file = now.strftime("%m_%d_%H")
+    log.info(f"log time: {now}")
     fh = logging.FileHandler(
         'logs/logging_' + log_file +
         '_' + args.model_type + flag_mini + '.log')
@@ -128,9 +182,12 @@ def main():
     model_path = os.path.join(output_dir, 'model.json')
     weight_path = os.path.join(output_dir, 'weights.h5')
 
+    log.info(f"model output path {output_dir}")
+
     # start training
     train(abnormal_list_path, normal_list_path, output_dir,
-          model_path, weight_path, num_iters, args.model_type)
+          model_path, weight_path, num_iters, args.model_type,
+          validation=True)
 
 
 if __name__ == "__main__":

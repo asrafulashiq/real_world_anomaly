@@ -19,12 +19,12 @@ log.setLevel(logging.INFO)
 # def main():
 parser = argparse.ArgumentParser(description="Testing anomaly detection")
 parser.add_argument('--weight', type=str,
-                    default="./model/trained_model/C3D_attn/",
+                    default="./model/trained_model_mini/C3D_attn/",
                     help="model weight path")
 parser.add_argument('--model', type=str,
-                    default="./model/trained_model/C3D_attn/model.json",
+                    default="./model/trained_model_mini/C3D_attn/model.json",
                     help="model.json path")
-parser.add_argument("--mini", type=str, default="false",
+parser.add_argument("--mini", type=str, default="true",
                     help="Whether to use mini data")
 parser.add_argument("--pred", type=str,
                     default="./results/predictions/C3D_attn/",
@@ -86,7 +86,8 @@ for vid_name, _input in load_one_video(test_list, log=log):
     # import pdb; pdb.set_trace()
     fname = pred_path / (vid_name + ".pkl")
     with fname.open("wb") as fp:
-        pickle.dump(pred.squeeze(), fp, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump((pred_all.squeeze(), pred.squeeze()),
+                    fp, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 # if __name__ == "__main__":
