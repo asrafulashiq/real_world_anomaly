@@ -63,7 +63,7 @@ for pred_file in tqdm(PRED_PATH.iterdir()):
         continue
     with pred_file.open('rb') as fp:
         _pred_all, _pred = pickle.load(fp)
-
+    # _pred_all = _pred_all
     # search this pred_file video
     vid_name = pred_file.stem  # remove suffix from file name
 
@@ -84,7 +84,7 @@ for pred_file in tqdm(PRED_PATH.iterdir()):
     for counter, ind in enumerate(indices):
         start_ind = ind[0]
         end_ind = ind[1]
-        score_pred[start_ind:end_ind+1] = _pred[counter]
+        score_pred[start_ind:end_ind+1] = _pred[counter]*_pred_all
 
     all_score_pred = np.concatenate(
         (all_score_pred, score_pred)
@@ -138,7 +138,7 @@ print(f"AUC: {roc_auc}")
 # plt.show()
 
 # get false alarm for normal
-optimal_threshold = 0.5
+# optimal_threshold = 0.05
 print("Threshold :", optimal_threshold)
 false_alarm = sum(norm_score_pred > optimal_threshold) / len(norm_score_pred)
 print("Normal video:")
