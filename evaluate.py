@@ -11,12 +11,19 @@ from sklearn.metrics import roc_curve, auc
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 import argparse
+import datetime
 
 
 parser = argparse.ArgumentParser(description="Training anomaly detection")
 parser.add_argument("--pred", type=str,
                     default="./results/predictions/C3D/",
                     help="path to save predictions")
+parser.add_argument("--plot", action='store_true',
+                    help='whether to save plots')
+parser.add_argument("--plot-path", dest='plot_path', type=str,
+                    default="./results/plots/C3D/",
+                    help="path to save all plots as pdf file")
+
 args = parser.parse_args()
 
 
@@ -33,6 +40,34 @@ df_temp_ann = pd.read_csv(
     header=None,
     skipinitialspace=True
 )
+
+
+pred_path_list = sorted(list(PRED_PATH.iterdir()))
+print('total test files: ', len(pred_path_list))
+
+
+if args.plot:
+    from matplotlib.backends.backend_pdf import PdfPages
+    print('setting up plotting')
+
+    PLOT_PATH = Path(args.plot_path)
+    PLOT_PATH.mkdir(exist_ok=True, parents=True)
+    pdf_path = PLOT_PATH / ('plots_' + PRED_PATH.parts[-1] + '_'
+                            + str(datetime.datetime.now()) + '.pdf')
+    pdf_pages = PdfPages(pdf_path)
+    nb_plot_per_page = 10
+    total_pages = int(np.ceil(len(pred_path_list)/nb_plot_per_page))
+    grid_size = (nb_plot_per_page//2, 2)
+    # fig = plt.figure(figsize=(8.27, 11.69), dpi=100)
+    all_axes = []
+    all_figs = []
+    for _i in range(total_pages):
+        fig, _ = plt.subplots(*grid_size)
+        fig.set_size_inches(8.27, 11.69)
+        all_figs.append(fig)
+        all_axes += fig.axes
+    assert len(all_axes) == total_pages * \
+        nb_plot_per_page, f'{len(all_axes)} != {total_pages * nb_plot_per_page}'
 
 
 def get_ind_from_pd(df):
@@ -54,7 +89,8 @@ norm_score_gt = np.array([])
 abn_score_pred = np.array([])
 abn_score_gt = np.array([])
 
-for pred_file in tqdm(PRED_PATH.iterdir()):
+
+for i, pred_file in tqdm(enumerate(pred_path_list)):
     if pred_file.suffix != '.pkl':
         continue
     with pred_file.open('rb') as fp:
@@ -100,6 +136,13 @@ for pred_file in tqdm(PRED_PATH.iterdir()):
         (all_score_gt, score_gt)
     )
 
+    if args.plot:
+        ax = all_axes[i]
+        ax.set_ylim(0, 1.2)
+        ax.plot(score_pred, color='g', linewidth=2)
+        ax.plot(score_gt, color='r', linestyle='dashed')
+        ax.set_title(vid_name)
+
     if len(gt_ind) != 0:  # abnormal video
         # _auc = roc_auc_score(score_gt, score_pred)
         # print(_auc)
@@ -114,21 +157,22 @@ for pred_file in tqdm(PRED_PATH.iterdir()):
 fpr, tpr, thresholds = roc_curve(all_score_gt, all_score_pred)
 roc_auc = auc(fpr, tpr)
 print(f"AUC: {roc_auc}")
-plt.figure()
-plt.plot(fpr, tpr, color='darkorange',
-         label='ROC curve (area = %0.2f)' % roc_auc)
-plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
-plt.xlim([0.0, 1.0])
-plt.ylim([0.0, 1.05])
-plt.xlabel('False Positive Rate')
-plt.ylabel('True Positive Rate')
-plt.title('Receiver operating characteristic example')
-plt.legend(loc="lower right")
-plt.show()
+# plt.figure()
+# plt.plot(fpr, tpr, color='darkorange',
+#          label='ROC curve (area = %0.2f)' % roc_auc)
+# plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+# plt.xlim([0.0, 1.0])
+# plt.ylim([0.0, 1.05])
+# plt.xlabel('False Positive Rate')
+# plt.ylabel('True Positive Rate')
+# plt.title('Receiver operating characteristic example')
+# plt.legend(loc="lower right")
+# plt.show()
 
 
 optimal_idx = np.argmax(tpr - fpr)
-optimal_threshold = thresholds[optimal_idx]
+# optimal_threshold = thresholds[optimal_idx]
+optimal_threshold = 0.5
 print("Threshold :", optimal_threshold)
 
 
@@ -144,3 +188,10 @@ prec = sum(abn_score_pred[p_ind] > optimal_threshold) / \
     sum(abn_score_pred > optimal_threshold)
 print("Abnormal video:")
 print(f" precision: {prec*100}\n recall: {recall*100}")
+
+if args.plot:
+    for fig in all_figs:
+        fig.tight_layout()
+        pdf_pages.savefig(fig)
+    pdf_pages.close()
+    print(f'{pdf_path} saved')

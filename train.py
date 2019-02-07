@@ -130,6 +130,7 @@ def main():
                         help="Extract C3D features?")
     parser.add_argument("--mini", type=str, default="true",
                         help="Whether to use mini data")
+    parser.add_argument("--valid", action='store_true')
     args = parser.parse_args()
     log.info(args)
 
@@ -184,10 +185,12 @@ def main():
 
     log.info(f"model output path {output_dir}")
 
+    # import pdb; pdb.set_trace()
+
     # start training
     train(abnormal_list_path, normal_list_path, output_dir,
           model_path, weight_path, num_iters, args.model_type,
-          validation=True)
+          validation=args.valid)
 
 
 if __name__ == "__main__":

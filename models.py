@@ -89,7 +89,8 @@ def create_model(lamb=0.01, feat_size=4096):
                     kernel_regularizer=l2(lamb)))
     model.add(Dropout(0.6))
     model.add(Dense(1, kernel_initializer='glorot_normal',
-                    kernel_regularizer=l2(lamb), activation='sigmoid'))
+                    kernel_regularizer=l2(lamb), activation='sigmoid',
+                    name='score'))
     return model
 
 

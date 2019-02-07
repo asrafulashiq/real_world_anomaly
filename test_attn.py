@@ -27,7 +27,7 @@ parser.add_argument('--model', type=str,
 parser.add_argument("--mini", type=str, default="true",
                     help="Whether to use mini data")
 parser.add_argument("--pred", type=str,
-                    default="./results/predictions/C3D_attn/",
+                    default="./results/predictions/C3D_attn_mini/",
                     help="path to save predictions")
 parser.add_argument("--model-type", dest='model_type',
                     type=str, default="c3d-attn",
@@ -86,8 +86,11 @@ for vid_name, _input in load_one_video(test_list, log=log):
     # import pdb; pdb.set_trace()
     fname = pred_path / (vid_name + ".pkl")
     with fname.open("wb") as fp:
-        pickle.dump((pred_all.squeeze(), pred.squeeze()),
+        # pickle.dump((pred_all.squeeze(), pred.squeeze()),
+        #             fp, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(pred.squeeze(),
                     fp, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 
 # if __name__ == "__main__":

@@ -1,0 +1,10 @@
+2019-02-06 18:12:32,689 - INFO: model output path model/trained_model/C3D
+2019-02-06 18:12:33,567 - INFO: None
+2019-02-06 18:12:33,568 - INFO: saving model in model/trained_model/C3D/model.json
+2019-02-06 18:12:33,568 - INFO: Iteration started
+2019-02-06 18:12:56,549 - INFO: 20: loss : 6.722701549530029
+2019-02-06 18:13:04,979 - INFO: 40: loss : 5.357095718383789
+2019-02-06 18:13:31,175 - INFO: model output path model/trained_model/C3D
+2019-02-06 18:13:32,042 - INFO: None
+2019-02-06 18:13:32,042 - INFO: saving model in model/trained_model/C3D/model.json
+2019-02-06 18:13:32,042 - INFO: Iteration started

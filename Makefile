@@ -6,9 +6,9 @@ test: test-c3d
 eval: eval-c3d
 
 train-c3d:
-	python train.py --model-type=c3d \
+	python train.py --mini=false --model-type=c3d \
 		--gpus=0,1 \
-		--iter=20000
+		--iter=70000
 
 train-c3d-mini:
 	python train.py --model-type=c3d \
@@ -16,7 +16,7 @@ train-c3d-mini:
 		--iter=20000
 
 train-c3d-attn:
-	python train.py --model-type=c3d-attn \
+	python train.py --mini=false --model-type=c3d-attn \
 		--gpus=0,1 \
 		--iter=20000
 
@@ -27,7 +27,7 @@ train-c3d-attn-mini:
 
 
 train-3d:
-	python train.py --model-type=3d \
+	python train.py --mini=false --model-type=3d \
 		--gpus=0,1 \
 		--iter=20000 \
 		--model-type=3d
@@ -46,15 +46,15 @@ test-c3d:
 		--model-type=c3d
 
 test-c3d-mini:
-	python test.py --mini=true --weight=./model/trained_model/C3D/ \
-		--model=./model/trained_model/C3D/model.json \
-		--pred=./results/predictions/C3D/ \
+	python test.py --mini=true --weight=./model/trained_model_mini/C3D/ \
+		--model=./model/trained_model_mini/C3D/model.json \
+		--pred=./results/predictions/C3D_mini/ \
 		--model-type=c3d
 
 test-c3d-attn-mini:
-	python test.py --mini=true --weight=./model/trained_model/C3D_attn/ \
-		--model=./model/trained_model/C3D_attn/model.json \
-		--pred=./results/predictions/C3D_attn/ \
+	python test.py --mini=true --weight=./model/trained_model_mini/C3D_attn/ \
+		--model=./model/trained_model_mini/C3D_attn/model.json \
+		--pred=./results/predictions/C3D_attn_mini/ \
 		--model-type=c3d-attn
 
 
@@ -76,5 +76,12 @@ eval-3d:
 eval-c3d-attn:
 	python evaluate.py --pred=./results/predictions/C3D_attn/
 
+eval-c3d-attn-mini:
+	python evaluate.py --pred=./results/predictions/C3D_attn_mini/ --plot --plot-path ./results/plots/C3D_attn/
+
+
 eval-c3d:
-	python evaluate.py --pred=./results/predictions/C3D/
+	python evaluate.py --pred=./results/predictions/C3D/ --plot  --plot-path ./results/plots/C3D/
+
+eval-c3d-mini:
+	python evaluate.py --pred=./results/predictions/C3D_mini/ --plot  --plot-path ./results/plots/C3D/

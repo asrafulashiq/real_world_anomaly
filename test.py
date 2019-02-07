@@ -49,7 +49,7 @@ def main():
     pred_path.mkdir(parents=True, exist_ok=True)
 
     assert os.path.exists(test_list), \
-        "test list file does not exist"
+        f"test list file {test_list} does not exist"
     model_path = args.model
     weight_path = args.weight
     if os.path.isdir(args.model):
