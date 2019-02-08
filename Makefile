@@ -25,6 +25,11 @@ train-c3d-attn-mini:
 		--gpus=0,1 --mini=true \
 		--iter=20000
 
+train-tcn-mini:
+	python train.py --model-type=tcn \
+		--gpus=0,1 --mini=true \
+		--iter=20000
+
 
 train-3d:
 	python train.py --mini=false --model-type=3d \
@@ -57,6 +62,13 @@ test-c3d-attn-mini:
 		--pred=./results/predictions/C3D_attn_mini/ \
 		--model-type=c3d-attn
 
+test-tcn-mini:
+	python test.py --mini=true --weight=./model/trained_model_mini/tcn/ \
+		--model=./model/trained_model_mini/tcn/model.json \
+		--pred=./results/predictions/tcn_mini/ \
+		--model-type=tcn
+
+
 
 test-3d:
 	python test.py --weight=./model/trained_model/3D/ \
@@ -85,3 +97,6 @@ eval-c3d:
 
 eval-c3d-mini:
 	python evaluate.py --pred=./results/predictions/C3D_mini/ --plot  --plot-path ./results/plots/C3D/
+
+eval-tcn-mini:
+	python evaluate.py --pred=./results/predictions/tcn_mini/ --plot  --plot-path ./results/plots/tcn/

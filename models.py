@@ -5,6 +5,8 @@ from keras import backend as K
 from keras.models import Model
 from keras.optimizers import Adagrad
 from keras.layers import Activation, Flatten, Reshape
+from tcn import TCN
+from keras import activations
 
 
 # default hyper-parameters
@@ -60,6 +62,28 @@ def custom_loss(y_true, y_pred):
 def custom_loss_attn(y_true, y_pred):
     """custom objective function for attention """
     return K.binary_crossentropy(y_true, y_pred)
+
+
+def create_model_tcn(segment_size=32, feat_size=4096):
+    """model with temporal convolutional layer"""
+    input_shape = (segment_size, feat_size)
+    inputs = Input(input_shape, name='input')
+
+    t1 = TCN(nb_filters=128, kernel_size=3, dropout_rate=0.5,
+             dilations=[1, 2], name='t1')(inputs)
+    # t2 = TCN(nb_filters=128, kernel_size=3, dropout_rate=0.3,
+    #          dilations=[1, 2, 4, 8], name='t2')(t1)
+    # t3 = TCN(nb_filters=128, kernel_size=3, dropout_rate=0.3,
+    #          dilations=[1, 2, 4, 8], name='t3')(t2)
+
+    t4 = TCN(nb_filters=1, kernel_size=2, dilations=[1, 2],
+             dropout_rate=0.5, name='t4', use_skip_connections=False)(t1)
+
+    # out = Activation('sigmoid', name='score')(t1)
+    model = Model(inputs=inputs, outputs=t4)
+    model.layers[-1].activation = activations.sigmoid
+
+    return model
 
 
 def create_model_3d(lamb=0.01):
@@ -145,6 +169,10 @@ def get_compiled_model(segment_size=32, feat_size=4096, lamb=0.01,
         _loss = custom_loss_attn
     elif model_type == '3d':
         model = create_model_3d(lamb)
+        _loss = custom_loss
+    elif model_type == 'tcn':
+        model = create_model_tcn(segment_size=segment_size,
+                                 feat_size=feat_size)
         _loss = custom_loss
 
     model.compile(loss=_loss, optimizer=adagrad)

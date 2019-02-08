@@ -28,6 +28,9 @@ def train(abnormal_list_path, normal_list_path, output_dir,
     _load = load_dataset_batch
     if model_type == "c3d":
         feat_size = 4096
+    elif model_type == "tcn":
+        feat_size = 4096
+        _load = load_dataset_batch_with_segment
     elif model_type == "c3d-attn":
         feat_size = 4096
         _load = load_dataset_batch_with_segment
@@ -146,13 +149,16 @@ def main():
 
     if args.model_type == 'c3d':
         output_dir = 'model/trained_model'+flag_mini+'/C3D'
-        flag_split = ""
+        flag_split = "_C3D"
     elif args.model_type == '3d':
         output_dir = 'model/trained_model'+flag_mini+'/3D'
         flag_split = "_3d"
     elif args.model_type == 'c3d-attn':
         output_dir = 'model/trained_model'+flag_mini+'/C3D_attn'
-        flag_split = ""
+        flag_split = "_C3D"
+    elif args.model_type == 'tcn':
+        output_dir = 'model/trained_model'+flag_mini+'/tcn'
+        flag_split = '_C3D'
 
     # create file handler which logs even debug messages
     now = datetime.datetime.now()

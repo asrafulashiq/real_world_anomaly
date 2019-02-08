@@ -8,23 +8,27 @@ import os
 from collections import defaultdict
 
 
+MINI = '_mini'
+
 _HOME = os.environ["HOME"]
 PARENT_FOLDER = Path(_HOME+"/dataset/UCF_crime")
 
 orig_split_train = PARENT_FOLDER / "Anomaly_Detection_splits/Anomaly_Train.txt"
 orig_split_test = PARENT_FOLDER / "Anomaly_Detection_splits/Anomaly_Test.txt"
 
-feature_name = "3D_features"
-feature_folder = PARENT_FOLDER / feature_name / "Avg"
-split_folder = PARENT_FOLDER / "custom_split_3d"
+feature_name = "C3D"
+feature_folder = PARENT_FOLDER / (feature_name+'_features') / "Avg"
+split_folder = PARENT_FOLDER / ("custom_split_"+feature_name)
 split_folder.mkdir(exist_ok=True)
 
-LABEL_ANOMS = ['Abuse', 'Arrest', 'Arson', 'Assault', 'Burglary',
-               'Explosion', 'Fighting', 'RoadAccidents', 'Robbery',
-               'Shooting', 'Shoplifting', 'Stealing', 'Vandalism']
+# LABEL_ANOMS = ['Abuse', 'Arrest', 'Arson', 'Assault', 'Burglary',
+#                'Explosion', 'Fighting', 'RoadAccidents', 'Robbery',
+#                'Shooting', 'Shoplifting', 'Stealing', 'Vandalism']
 
 # LABEL_ANOMS = ['Abuse', 'Arrest', 'Arson', 'Assault', 'Burglary']
-DOWN_RATIO = None
+LABEL_ANOMS = ['Abuse', 'Arrest', 'Assault', 'Fighting', 'Arson']
+
+DOWN_RATIO = 5./13  # None
 
 
 """ create dict """
@@ -103,9 +107,9 @@ print(f" Anomaly: {len(anom_train)}")
 print(f" Normal: {len(normal_train)}")
 print(f"Test: {len(all_test)}")
 
-file_train_anom = split_folder / 'Custom_train_split_abnormal.txt'
-file_train_normal = split_folder / 'Custom_train_split_normal.txt'
-file_test = split_folder / 'Custom_test_split.txt'
+file_train_anom = split_folder / ('Custom_train_split'+MINI+'_abnormal.txt')
+file_train_normal = split_folder / ('Custom_train_split'+MINI+'_normal.txt')
+file_test = split_folder / ('Custom_test_split'+MINI+'.txt')
 
 with file_train_anom.open("w") as fp:
     fp.writelines(os.linesep.join(anom_train))

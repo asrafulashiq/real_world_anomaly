@@ -6,6 +6,7 @@ from utils import load_model
 from dataloader import load_one_video
 from pathlib import Path
 import pickle
+import numpy as np
 
 # set logging
 logging.basicConfig()
@@ -32,8 +33,9 @@ def main():
     args = parser.parse_args()
     log.info(args)
 
-    if args.model_type == 'c3d' or args.model_type == 'c3d-attn':
-        flag_split = ""
+    if args.model_type == 'c3d' or args.model_type == 'c3d-attn' or \
+       args.model_type == 'tcn':
+        flag_split = "_C3D"
     elif args.model_type == '3d':
         flag_split = "_3d"
 
@@ -71,11 +73,13 @@ def main():
     model = load_model(model_path, weight_path=weight_path)
 
     for vid_name, _input in load_one_video(test_list, log=log):
+        if args.model_type == 'tcn':
+            _input = np.expand_dims(_input, axis=0)
         pred = model.predict_on_batch(_input)
         # import pdb; pdb.set_trace()
         fname = pred_path / (vid_name + ".pkl")
         with fname.open("wb") as fp:
-            pickle.dump(pred, fp, protocol=pickle.HIGHEST_PROTOCOL)
+            pickle.dump(pred.squeeze(), fp, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 if __name__ == "__main__":

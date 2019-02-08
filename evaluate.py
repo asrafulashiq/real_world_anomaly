@@ -8,6 +8,8 @@ from utils import get_num_frame, get_frames_32_seg
 import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import average_precision_score
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 import argparse
@@ -111,6 +113,9 @@ for i, pred_file in tqdm(enumerate(pred_path_list)):
     num_frames = get_num_frame(vid_path)
     indices = get_frames_32_seg(num_frames, SEG)
 
+    # import pdb
+    # pdb.set_trace()
+
     # get prediction for each frame
     score_pred = np.zeros(num_frames)
     for counter, ind in enumerate(indices):
@@ -121,6 +126,8 @@ for i, pred_file in tqdm(enumerate(pred_path_list)):
     all_score_pred = np.concatenate(
         (all_score_pred, score_pred)
     )
+
+    # import pdb; pdb.set_trace()
 
     # print(pred_file)
     # get gt score for each frame
@@ -169,8 +176,22 @@ print(f"AUC: {roc_auc}")
 # plt.legend(loc="lower right")
 # plt.show()
 
+# precision recall
+pr, re, _ = precision_recall_curve(all_score_gt, all_score_pred)
+average_precision = average_precision_score(all_score_gt, all_score_pred)
 
-optimal_idx = np.argmax(tpr - fpr)
+# _fig, _ax = plt.subplots()
+# _ax.step(re, pr, color='b', alpha=0.2, where='post')
+# _ax.set_xlabel('Recall')
+# _ax.set_ylabel('Precision')
+# _ax.set_ylim([0.0, 1.05])
+# _ax.set_title('2-class Precision-Recall curve: AP={0:0.2f}'.format(
+#           average_precision))
+# _fig.show()
+print(f' AP: {average_precision}')
+
+
+# optimal_idx = np.argmax(tpr - fpr)
 # optimal_threshold = thresholds[optimal_idx]
 optimal_threshold = 0.5
 print("Threshold :", optimal_threshold)
