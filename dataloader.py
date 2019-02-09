@@ -5,6 +5,38 @@ from pathlib import Path
 import pandas as pd
 
 
+def load_dataset_one_full(abnormal_list_path, normal_list_path):
+    """load one video
+    """
+
+    with open(abnormal_list_path, "r") as fp:
+        abnormal_list = [line.rstrip() for line in fp]
+
+    with open(normal_list_path, "r") as fp:
+        normal_list = [line.rstrip() for line in fp]
+
+    # sampled_normal_list = random.sample(normal_list, batch_size//2)
+    # sampled_abnormal_list = random.sample(abnormal_list, batch_size//2)
+
+    all_path = abnormal_list + normal_list
+    np.random.seed(0)
+
+    np.random.shuffle(all_path)
+
+    """ get one video features """
+    counter = 0
+    while True:
+        _id = counter % len(all_path)
+        f_vid = all_path[_id]
+        feature = np.load(open(f_vid, "rb"))
+
+        _type = 1 if f_vid in abnormal_list_path else 0
+        labels = np.ones(feature.shape[0]) * _type
+        _id += 1
+
+        yield feature, labels
+
+
 def load_dataset_batch(abnormal_list_path, normal_list_path,
                        batch_size=60, segment_size=32, feat_size=4096):
     """load abnormal and normal video for a batch.

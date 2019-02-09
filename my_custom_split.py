@@ -17,8 +17,8 @@ orig_split_train = PARENT_FOLDER / "Anomaly_Detection_splits/Anomaly_Train.txt"
 orig_split_test = PARENT_FOLDER / "Anomaly_Detection_splits/Anomaly_Test.txt"
 
 feature_name = "C3D"
-feature_folder = PARENT_FOLDER / (feature_name+'_features') / "Avg"
-split_folder = PARENT_FOLDER / ("custom_split_"+feature_name)
+feature_folder = PARENT_FOLDER / (feature_name+'_features') / "npy"
+split_folder = PARENT_FOLDER / ("full_custom_split_"+feature_name)
 split_folder.mkdir(exist_ok=True)
 
 # LABEL_ANOMS = ['Abuse', 'Arrest', 'Arson', 'Assault', 'Burglary',

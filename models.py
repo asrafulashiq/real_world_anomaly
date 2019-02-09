@@ -19,6 +19,48 @@ num_iters = 20000
 lr = 0.001
 
 
+def custom_loss_full(y_true, y_pred):
+    """custom objective function
+
+    Arguments:
+        y_true {tensor} -- size: batch_size/2 * 2 * seg_size
+        y_pred {tensor} -- size: y_true
+    """
+    y_true = K.flatten(y_true)
+    y_pred = K.flatten(y_pred)
+
+    # n_seg = segment_size
+    n_vid = batch_size
+
+    # import pdb; pdb.set_trace()
+    _dtye = y_true.dtype
+    Loss1 = K.constant([], dtype=_dtye)
+    Loss2 = K.constant([], dtype=_dtye)
+    Loss3 = K.constant([], dtype=_dtye)
+
+    for i_b in range(n_vid):
+        # the first n_seg segments are for abnormal and next n_seg normal
+        # y_true_batch_all = y_true[i_b*2*n_seg: (i_b+1)*2*n_seg]
+        y_pred_batch_all = y_pred[i_b*2*n_seg: (i_b+1)*2*n_seg]
+
+        y_batch_abn = y_pred_batch_all[:n_seg]  # score for an abnormal video
+        y_batch_nor = y_pred_batch_all[n_seg:]  # score for a normal video
+
+        loss_1 = K.max([0, 1 - K.max(y_batch_abn) + K.max(y_batch_nor)])
+        loss_2 = K.sum(K.square(y_batch_abn[:-1]-y_batch_abn[1:]))
+        loss_3 = K.sum(y_batch_abn)
+
+        Loss1 = K.concatenate([Loss1, [loss_1]])
+        Loss2 = K.concatenate([Loss2, [loss_2]])
+        Loss3 = K.concatenate([Loss3, [loss_3]])
+
+    total_loss = K.mean(Loss1) + lambda1 * K.sum(Loss2) + \
+        lambda2 * K.sum(Loss3)
+    return total_loss
+
+
+
+
 def custom_loss(y_true, y_pred):
     """custom objective function
 
@@ -62,6 +104,28 @@ def custom_loss(y_true, y_pred):
 def custom_loss_attn(y_true, y_pred):
     """custom objective function for attention """
     return K.binary_crossentropy(y_true, y_pred)
+
+
+def create_model_tcn_full(feat_size=4096):
+    """model with temporal convolutional layer"""
+    input_shape = (None, feat_size)
+    inputs = Input(input_shape, name='input')
+
+    t1 = TCN(nb_filters=128, kernel_size=3, dropout_rate=0.5,
+             dilations=[1, 2, 4, 8], nb_stacks=3, name='t1')(inputs)
+    # t2 = TCN(nb_filters=128, kernel_size=3, dropout_rate=0.5,
+    #          dilations=[1, 2, 4, 8], name='t2')(t1)
+    # t3 = TCN(nb_filters=128, kernel_size=3, dropout_rate=0.3,
+    #          dilations=[1, 2, 4, 8], name='t3')(t2)
+
+    t4 = TCN(nb_filters=1, kernel_size=3, dilations=[1, 2],
+             dropout_rate=0.5, name='t4', use_skip_connections=False)(t1)
+
+    # out = Activation('sigmoid', name='score')(t1)
+    model = Model(inputs=inputs, outputs=t4)
+    model.layers[-1].activation = activations.sigmoid
+
+    return model
 
 
 def create_model_tcn(segment_size=32, feat_size=4096):
