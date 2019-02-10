@@ -1,0 +1,29 @@
+2019-02-09 19:10:01,827 - INFO: model output path model/trained_model_mini/tcn
+2019-02-09 19:11:28,572 - INFO: model output path model/trained_model_mini/tcn
+2019-02-09 19:35:09,687 - INFO: model output path model/trained_model_mini/tcn
+2019-02-09 19:35:30,317 - INFO: None
+2019-02-09 19:35:32,123 - INFO: saving model in model/trained_model_mini/tcn/model.json
+2019-02-09 19:36:22,695 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 19:36:34,474 - INFO: None
+2019-02-09 19:36:34,475 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 19:36:40,846 - INFO: Iteration started
+2019-02-09 19:39:08,642 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 19:39:13,619 - INFO: None
+2019-02-09 19:39:13,619 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 19:39:36,822 - INFO: Iteration started
+2019-02-09 19:39:53,911 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 19:39:58,704 - INFO: None
+2019-02-09 19:39:58,705 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 19:40:00,763 - INFO: Iteration started
+2019-02-09 19:41:00,154 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 19:41:05,129 - INFO: None
+2019-02-09 19:41:05,130 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 19:41:05,153 - INFO: Iteration started
+2019-02-09 19:47:55,834 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 19:48:00,666 - INFO: None
+2019-02-09 19:48:00,667 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 19:48:00,690 - INFO: Iteration started
+2019-02-09 19:54:43,230 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 19:55:02,343 - INFO: None
+2019-02-09 19:55:03,090 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 19:55:04,326 - INFO: Iteration started

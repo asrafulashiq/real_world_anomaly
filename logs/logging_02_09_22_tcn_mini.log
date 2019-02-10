@@ -1,0 +1,35 @@
+2019-02-09 22:01:51,410 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 22:01:53,473 - INFO: None
+2019-02-09 22:01:53,473 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 22:01:53,477 - INFO: Iteration started
+2019-02-09 22:02:04,449 - INFO: 20: loss : 1.030306100845337
+2019-02-09 22:02:08,507 - INFO: 40: loss : 0.6914693117141724
+2019-02-09 22:02:12,445 - INFO: 60: loss : 0.7284791469573975
+2019-02-09 22:02:16,531 - INFO: 80: loss : 0.4735907316207886
+2019-02-09 22:02:20,637 - INFO: 100: loss : 1.5127955675125122
+2019-02-09 22:02:24,710 - INFO: 120: loss : 1.4692777395248413
+2019-02-09 22:02:28,797 - INFO: 140: loss : 0.804113507270813
+2019-02-09 22:02:32,852 - INFO: 160: loss : 0.39235052466392517
+2019-02-09 22:02:36,958 - INFO: 180: loss : 0.2728237807750702
+2019-02-09 22:02:41,000 - INFO: 200: loss : 0.4390105605125427
+2019-02-09 22:02:45,086 - INFO: 220: loss : 0.5759866237640381
+2019-02-09 22:02:49,218 - INFO: 240: loss : 0.5411062836647034
+2019-02-09 22:03:19,773 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 22:03:21,869 - INFO: None
+2019-02-09 22:03:21,869 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 22:03:21,873 - INFO: Iteration started
+2019-02-09 22:03:55,056 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 22:15:16,851 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 22:15:18,981 - INFO: None
+2019-02-09 22:15:18,981 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 22:15:18,985 - INFO: Iteration started
+2019-02-09 22:16:50,021 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 22:16:52,188 - INFO: None
+2019-02-09 22:16:52,189 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 22:16:52,193 - INFO: Iteration started
+2019-02-09 22:17:03,167 - INFO: 20: loss : 0.7534056901931763
+2019-02-09 22:17:07,266 - INFO: 40: loss : 0.6245927214622498
+2019-02-09 22:24:01,271 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 22:24:03,342 - INFO: None
+2019-02-09 22:24:03,342 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 22:24:03,346 - INFO: Iteration started

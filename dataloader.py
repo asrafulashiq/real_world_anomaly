@@ -5,36 +5,71 @@ from pathlib import Path
 import pandas as pd
 
 
-def load_dataset_one_full(abnormal_list_path, normal_list_path):
-    """load one video
+np.random.seed(0)
+
+
+def load_dataset_batch_with_segment_tcn(abnormal_list_path,
+                                        normal_list_path, batch_size=60,
+                                        segment_size=32, feat_size=4096):
+    """load abnormal and normal video for a batch.
+    for each type, feature size will be \
+    batch_size/2 * segment_size * [feature_size]
     """
+    import re
+    from sklearn.preprocessing import LabelEncoder
+    # from keras.utils import to_categorical
+
+    prog = re.compile('[^a-zA-Z]')
+
+    abnormal_list = []
+    normal_list = []
+    _categories = []
 
     with open(abnormal_list_path, "r") as fp:
-        abnormal_list = [line.rstrip() for line in fp]
+        for line in fp:
+            line = line.rstrip()
+            abnormal_list.append(line)
+            name = line.split(os.path.sep)[-1]
+            _categories.append(prog.split(name)[0])
+
+    _categories.append("Normal")
+
+    encoder = LabelEncoder()
+    label_encoded = encoder.fit_transform(_categories)
 
     with open(normal_list_path, "r") as fp:
         normal_list = [line.rstrip() for line in fp]
 
-    # sampled_normal_list = random.sample(normal_list, batch_size//2)
-    # sampled_abnormal_list = random.sample(abnormal_list, batch_size//2)
+    abnormal_list = np.array(abnormal_list)
+    normal_list = np.array(normal_list)
+    _categories = np.array(_categories)
 
-    all_path = abnormal_list + normal_list
-    np.random.seed(0)
-
-    np.random.shuffle(all_path)
-
-    """ get one video features """
-    counter = 0
     while True:
-        _id = counter % len(all_path)
-        f_vid = all_path[_id]
-        feature = np.load(open(f_vid, "rb"))
+        abn_indices = np.random.choice(len(abnormal_list), batch_size//2)
+        sampled_abnormal_list = abnormal_list[abn_indices]
+        sampled_abnormal_labels = label_encoded[abn_indices]
 
-        _type = 1 if f_vid in abnormal_list_path else 0
-        labels = np.ones(feature.shape[0]) * _type
-        _id += 1
+        sampled_normal_list = np.random.choice(normal_list, batch_size//2)
 
-        yield feature, labels
+        data = np.zeros((batch_size, segment_size, feat_size), dtype=np.float)
+        label_1 = np.zeros((batch_size, segment_size, 1), dtype=np.float)
+        label_2 = np.zeros((batch_size, segment_size, 5), dtype=np.float)
+
+        for i in range(batch_size//2):
+            feat_abnormal = np.load(open(sampled_abnormal_list[i], 'rb'))
+            feat_normal = np.load(open(sampled_normal_list[i], 'rb'))
+
+            data[i*2] = feat_abnormal
+            data[i*2+1] = feat_normal
+
+            label_1[i*2] = 1
+            label_1[i*2+1] = 0
+
+            label_2[i*2, :, int(sampled_abnormal_labels[i])] = 1
+            # label_2[i*2+1, :, int(sampled_abnormal_labels[-1])] = 1
+
+        labels = np.concatenate((label_1, label_2), axis=-1)
+        yield data, label_1
 
 
 def load_dataset_batch(abnormal_list_path, normal_list_path,
@@ -87,30 +122,32 @@ def load_dataset_batch_with_segment(abnormal_list_path,
     with open(normal_list_path, "r") as fp:
         normal_list = [line.rstrip() for line in fp]
 
-    sampled_normal_list = random.sample(normal_list, batch_size//2)
-    sampled_abnormal_list = random.sample(abnormal_list, batch_size//2)
+    while True:
 
-    data = np.zeros((batch_size, segment_size, feat_size), dtype=np.float)
-    # labels = np.zeros(batch_size, dtype=np.float)
+        sampled_normal_list = random.sample(normal_list, batch_size//2)
+        sampled_abnormal_list = random.sample(abnormal_list, batch_size//2)
 
-    for i in range(batch_size//2):
-        # load abnormal video
-        feat_abnormal = np.load(open(sampled_abnormal_list[i], 'rb'))
-        # size : segment_size * feat_size
+        data = np.zeros((batch_size, segment_size, feat_size), dtype=np.float)
+        # labels = np.zeros(batch_size, dtype=np.float)
 
-        feat_normal = np.load(open(sampled_normal_list[i], 'rb'))
+        for i in range(batch_size//2):
+            # load abnormal video
+            feat_abnormal = np.load(open(sampled_abnormal_list[i], 'rb'))
+            # size : segment_size * feat_size
 
-        data[i*2] = feat_abnormal
-        data[i*2+1] = feat_normal
+            feat_normal = np.load(open(sampled_normal_list[i], 'rb'))
 
-        # labels[i*2*segment_size: (i*2*segment_size + segment_size)] = 1
+            data[i*2] = feat_abnormal
+            data[i*2+1] = feat_normal
 
-    labels = np.tile(
-        np.array([1, 0], dtype=np.float),
-        batch_size // 2
-    )
+            # labels[i*2*segment_size: (i*2*segment_size + segment_size)] = 1
 
-    return data, labels
+        labels = np.tile(
+            np.array([1, 0], dtype=np.float),
+            batch_size // 2
+        )
+
+        yield data, labels
 
 
 def load_one_video(test_file, log=None, valid=False):

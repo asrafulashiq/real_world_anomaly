@@ -1,0 +1,135 @@
+2019-02-09 21:01:51,817 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:02:02,336 - INFO: None
+2019-02-09 21:02:02,337 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:02:02,357 - INFO: Iteration started
+2019-02-09 21:18:21,858 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:18:22,153 - INFO: None
+2019-02-09 21:18:22,153 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:18:22,155 - INFO: Iteration started
+2019-02-09 21:18:29,076 - INFO: 20: loss : 1.062691569328308
+2019-02-09 21:18:32,807 - INFO: 40: loss : 0.885128378868103
+2019-02-09 21:19:02,981 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:19:03,279 - INFO: None
+2019-02-09 21:19:03,279 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:19:03,282 - INFO: Iteration started
+2019-02-09 21:19:10,264 - INFO: 20: loss : 5.6042070388793945
+2019-02-09 21:19:14,085 - INFO: 40: loss : 6.032639503479004
+2019-02-09 21:19:17,948 - INFO: 60: loss : 5.214395523071289
+2019-02-09 21:19:21,755 - INFO: 80: loss : 7.10387659072876
+2019-02-09 21:19:25,601 - INFO: 100: loss : 6.210986614227295
+2019-02-09 21:19:29,383 - INFO: 120: loss : 6.197597026824951
+2019-02-09 21:19:33,108 - INFO: 140: loss : 5.678735256195068
+2019-02-09 21:19:36,989 - INFO: 160: loss : 5.730401515960693
+2019-02-09 21:19:40,828 - INFO: 180: loss : 5.174803256988525
+2019-02-09 21:19:44,619 - INFO: 200: loss : 5.404252052307129
+2019-02-09 21:19:48,403 - INFO: 220: loss : 5.196737289428711
+2019-02-09 21:19:52,224 - INFO: 240: loss : 5.134194850921631
+2019-02-09 21:23:39,055 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:26:29,864 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:28:21,331 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:30:10,942 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:30:18,204 - INFO: None
+2019-02-09 21:30:18,205 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:30:18,218 - INFO: Iteration started
+2019-02-09 21:35:51,665 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:35:52,875 - INFO: None
+2019-02-09 21:35:52,875 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:35:52,878 - INFO: Iteration started
+2019-02-09 21:36:02,298 - INFO: 20: loss : 2.043881893157959
+2019-02-09 21:36:06,331 - INFO: 40: loss : 1.359046220779419
+2019-02-09 21:36:10,399 - INFO: 60: loss : 0.7395114898681641
+2019-02-09 21:36:14,467 - INFO: 80: loss : 1.117993712425232
+2019-02-09 21:36:18,480 - INFO: 100: loss : 1.3026138544082642
+2019-02-09 21:36:22,527 - INFO: 120: loss : 1.3008992671966553
+2019-02-09 21:36:26,600 - INFO: 140: loss : 0.4615659713745117
+2019-02-09 21:36:30,603 - INFO: 160: loss : 1.1260286569595337
+2019-02-09 21:36:34,633 - INFO: 180: loss : 0.7506094574928284
+2019-02-09 21:36:38,673 - INFO: 200: loss : 1.0065960884094238
+2019-02-09 21:36:42,748 - INFO: 220: loss : 0.6825048923492432
+2019-02-09 21:39:42,423 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:41:15,942 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:41:34,427 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:41:34,725 - INFO: None
+2019-02-09 21:41:34,725 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:41:34,728 - INFO: Iteration started
+2019-02-09 21:41:41,624 - INFO: 20: loss : 6.921110153198242
+2019-02-09 21:41:45,268 - INFO: 40: loss : 6.78100061416626
+2019-02-09 21:41:49,046 - INFO: 60: loss : 4.800461769104004
+2019-02-09 21:41:52,855 - INFO: 80: loss : 5.188384532928467
+2019-02-09 21:41:56,608 - INFO: 100: loss : 5.677750587463379
+2019-02-09 21:42:00,416 - INFO: 120: loss : 5.44537878036499
+2019-02-09 21:42:04,185 - INFO: 140: loss : 6.005488872528076
+2019-02-09 21:42:07,915 - INFO: 160: loss : 5.95959997177124
+2019-02-09 21:42:11,720 - INFO: 180: loss : 6.9948954582214355
+2019-02-09 21:42:15,483 - INFO: 200: loss : 6.475078105926514
+2019-02-09 21:42:19,253 - INFO: 220: loss : 6.981667995452881
+2019-02-09 21:42:22,880 - INFO: 240: loss : 4.407627582550049
+2019-02-09 21:42:26,538 - INFO: 260: loss : 6.223615646362305
+2019-02-09 21:42:30,313 - INFO: 280: loss : 6.757110595703125
+2019-02-09 21:42:34,117 - INFO: 300: loss : 5.38390588760376
+2019-02-09 21:42:37,899 - INFO: 320: loss : 3.5997211933135986
+2019-02-09 21:42:41,673 - INFO: 340: loss : 4.678255081176758
+2019-02-09 21:42:45,464 - INFO: 360: loss : 6.027121067047119
+2019-02-09 21:42:49,273 - INFO: 380: loss : 5.463389873504639
+2019-02-09 21:42:53,050 - INFO: 400: loss : 5.962408065795898
+2019-02-09 21:46:02,133 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:46:02,759 - INFO: None
+2019-02-09 21:46:02,759 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:46:02,762 - INFO: Iteration started
+2019-02-09 21:46:12,172 - INFO: 20: loss : 2.3317081928253174
+2019-02-09 21:46:16,042 - INFO: 40: loss : 0.7769678831100464
+2019-02-09 21:46:19,857 - INFO: 60: loss : 0.8756411075592041
+2019-02-09 21:46:23,741 - INFO: 80: loss : 1.0453516244888306
+2019-02-09 21:46:27,666 - INFO: 100: loss : 0.9842813014984131
+2019-02-09 21:46:31,593 - INFO: 120: loss : 0.37913891673088074
+2019-02-09 21:46:35,462 - INFO: 140: loss : 0.8516771793365479
+2019-02-09 21:46:39,378 - INFO: 160: loss : 0.49249038100242615
+2019-02-09 21:46:43,262 - INFO: 180: loss : 0.7066395878791809
+2019-02-09 21:46:47,125 - INFO: 200: loss : 0.43447163701057434
+2019-02-09 21:46:51,035 - INFO: 220: loss : 0.6199020147323608
+2019-02-09 21:51:06,710 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:51:07,007 - INFO: None
+2019-02-09 21:51:07,007 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:51:07,010 - INFO: Iteration started
+2019-02-09 21:51:13,931 - INFO: 20: loss : 6.0805439949035645
+2019-02-09 21:51:17,623 - INFO: 40: loss : 5.759776592254639
+2019-02-09 21:51:25,748 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:51:26,052 - INFO: None
+2019-02-09 21:51:26,052 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:51:26,055 - INFO: Iteration started
+2019-02-09 21:52:51,878 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:52:52,439 - INFO: None
+2019-02-09 21:52:52,440 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:52:52,442 - INFO: Iteration started
+2019-02-09 21:53:01,408 - INFO: 20: loss : 3.653419256210327
+2019-02-09 21:53:05,402 - INFO: 40: loss : 5.547934055328369
+2019-02-09 21:53:09,337 - INFO: 60: loss : 5.785319805145264
+2019-02-09 21:53:13,318 - INFO: 80: loss : 4.4985880851745605
+2019-02-09 21:53:17,286 - INFO: 100: loss : 5.841279029846191
+2019-02-09 21:53:42,105 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:54:07,731 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:54:34,367 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:56:32,210 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:56:32,838 - INFO: None
+2019-02-09 21:56:32,838 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:56:32,841 - INFO: Iteration started
+2019-02-09 21:56:41,981 - INFO: 20: loss : 5.333122253417969
+2019-02-09 21:56:45,853 - INFO: 40: loss : 5.771154880523682
+2019-02-09 21:56:49,769 - INFO: 60: loss : 5.736188888549805
+2019-02-09 21:57:14,632 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:57:15,273 - INFO: None
+2019-02-09 21:57:15,273 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:57:15,276 - INFO: Iteration started
+2019-02-09 21:57:24,628 - INFO: 20: loss : 7.381536960601807
+2019-02-09 21:57:28,589 - INFO: 40: loss : 5.769824028015137
+2019-02-09 21:57:32,586 - INFO: 60: loss : 5.220459938049316
+2019-02-09 21:57:36,551 - INFO: 80: loss : 6.231627464294434
+2019-02-09 21:57:58,190 - INFO: model output path model/trained_model_mini/tcn2
+2019-02-09 21:57:58,827 - INFO: None
+2019-02-09 21:57:58,827 - INFO: saving model in model/trained_model_mini/tcn2/model.json
+2019-02-09 21:57:58,830 - INFO: Iteration started
+2019-02-09 21:58:08,797 - INFO: 20: loss : 0.8231074810028076
+2019-02-09 21:58:12,708 - INFO: 40: loss : 1.2486878633499146
+2019-02-09 21:58:16,567 - INFO: 60: loss : 0.4915913939476013
+2019-02-09 21:58:20,474 - INFO: 80: loss : 0.7724019289016724
+2019-02-09 21:58:24,414 - INFO: 100: loss : 0.40252894163131714

@@ -7,7 +7,7 @@ import re
 from utils import get_num_frame, get_frames_32_seg
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_curve, auc, accuracy_score
 from sklearn.metrics import precision_recall_curve
 from sklearn.metrics import average_precision_score
 from matplotlib import pyplot as plt
@@ -91,12 +91,17 @@ norm_score_gt = np.array([])
 abn_score_pred = np.array([])
 abn_score_gt = np.array([])
 
+full_video_gt = []
+full_video_pred = []
+
 
 for i, pred_file in tqdm(enumerate(pred_path_list)):
     if pred_file.suffix != '.pkl':
         continue
     with pred_file.open('rb') as fp:
         _pred = pickle.load(fp)
+
+    full_video_pred.append(np.max(_pred))
 
     # search this pred_file video
     vid_name = pred_file.stem  # remove suffix from file name
@@ -156,9 +161,12 @@ for i, pred_file in tqdm(enumerate(pred_path_list)):
         # print()
         abn_score_gt = np.concatenate((abn_score_gt, score_gt))
         abn_score_pred = np.concatenate((abn_score_pred, score_pred))
+
+        full_video_gt.append(1)
     else:
         # norm_score_gt = np.concatenate((norm_score_gt, score_gt))
         norm_score_pred = np.concatenate((norm_score_pred, score_pred))
+        full_video_gt.append(0)
 
 
 fpr, tpr, thresholds = roc_curve(all_score_gt, all_score_pred)
@@ -177,8 +185,8 @@ print(f"AUC: {roc_auc}")
 # plt.show()
 
 # precision recall
-pr, re, _ = precision_recall_curve(all_score_gt, all_score_pred)
-average_precision = average_precision_score(all_score_gt, all_score_pred)
+# pr, re, _ = precision_recall_curve(all_score_gt, all_score_pred)
+# average_precision = average_precision_score(all_score_gt, all_score_pred)
 
 # _fig, _ax = plt.subplots()
 # _ax.step(re, pr, color='b', alpha=0.2, where='post')
@@ -188,7 +196,7 @@ average_precision = average_precision_score(all_score_gt, all_score_pred)
 # _ax.set_title('2-class Precision-Recall curve: AP={0:0.2f}'.format(
 #           average_precision))
 # _fig.show()
-print(f' AP: {average_precision}')
+# print(f' AP: {average_precision}')
 
 
 # optimal_idx = np.argmax(tpr - fpr)
@@ -216,3 +224,10 @@ if args.plot:
         pdf_pages.savefig(fig)
     pdf_pages.close()
     print(f'{pdf_path} saved')
+
+
+# ## full video classification
+full_video_pred = [int(i > 0.5) for i in full_video_pred]
+accuracy_full = accuracy_score(
+    full_video_gt, full_video_pred)
+print(f" full video accuracy : {accuracy_full}")

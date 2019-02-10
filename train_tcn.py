@@ -6,9 +6,11 @@ import datetime
 from utils import save_model
 from dataloader import load_dataset_batch, load_valid_batch
 from dataloader import load_dataset_batch_with_segment
+from dataloader import load_dataset_batch_with_segment_tcn
 from models import get_compiled_model
 import numpy as np
 import pickle
+import types
 
 
 lambda3 = 0.01
@@ -31,6 +33,9 @@ def train(abnormal_list_path, normal_list_path, output_dir,
     elif model_type == "tcn":
         feat_size = 4096
         _load = load_dataset_batch_with_segment
+        cur_loader = _load(abnormal_list_path,
+                           normal_list_path,
+                           feat_size=feat_size)
     elif model_type == "c3d-attn":
         feat_size = 4096
         _load = load_dataset_batch_with_segment
@@ -75,9 +80,12 @@ def train(abnormal_list_path, normal_list_path, output_dir,
 
     for cur_iter in tqdm(range(num_iters)):
         # get one batch
-        inputs, labels = _load(abnormal_list_path,
-                               normal_list_path,
-                               feat_size=feat_size)
+        if model_type == 'tcn':
+            inputs, labels = next(cur_loader)
+        else:
+            inputs, labels = _load(abnormal_list_path,
+                                   normal_list_path,
+                                   feat_size=feat_size)
 
         # train on a batch
         batch_loss = model.train_on_batch(inputs, labels)
@@ -124,7 +132,7 @@ def main():
 
     # parse arguments
     parser = argparse.ArgumentParser(description="Training anomaly detection")
-    parser.add_argument('--iter', type=int, default=50000,
+    parser.add_argument('--iter', type=int, default=20000,
                         help='total iteration')
     parser.add_argument("--gpus", type=str, default="0,1",
                         help="Comma separated list of GPU devices to use")
@@ -157,7 +165,7 @@ def main():
         output_dir = 'model/trained_model'+flag_mini+'/C3D_attn'
         flag_split = "_C3D"
     elif args.model_type == 'tcn':
-        output_dir = 'model/trained_model'+flag_mini+'/tcn'
+        output_dir = 'model/trained_model'+flag_mini+'/tcn2'
         flag_split = '_C3D'
 
     # create file handler which logs even debug messages
