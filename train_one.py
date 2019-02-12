@@ -32,8 +32,9 @@ def train(abnormal_list_path, normal_list_path, output_dir,
     if model_type == "c3d":
         feat_size = 4096
     elif model_type == "tcn":
+        from dataloader import tmp_load
         feat_size = 4096
-        _load = load_dataset_batch_with_segment_tcn
+        _load = tmp_load
         cur_loader = _load(abnormal_list_path,
                            normal_list_path,
                            batch_size=batch_size,
@@ -60,33 +61,22 @@ def train(abnormal_list_path, normal_list_path, output_dir,
     losses = []
 
     if validation:
-        from keras import Model
-        from utils import valid_res
-        valid_list_file = (
-            '/media/ash/New Volume/dataset/UCF_crime/'
-            'custom_split/Custom_test_split_mini.txt')
-        tmp_ann_file = './Temporal_Anomaly_Annotation.txt'
-        valid_gen = load_valid_batch(
-            valid_list_file,
-            tmp_ann_file
-        )
-        model_valid = Model(
-            inputs=model.input,
-            outputs=[
-                model.output,
-                model.get_layer(name='score').output
-            ]
-        )
-        with open("./frame_num.pkl", "rb") as fp:
-            dict_frame = pickle.load(fp)
+        import matplotlib.pyplot as plt
+        # from utils import get_frames_32_seg, get_num_frame
+        from pathlib import Path
+        from collections import defaultdict, deque, Counter
+        all_lines = defaultdict(lambda: deque(maxlen=30))
 
-    # sess = K.get_session()
-    # sess = tf_debug.LocalCLIDebugWrapperSession(sess)
+        # total_images = batch_size // 2
+        # im_per_row = 4
+        # total_row = int(np.ceil(total_images / im_per_row))
+
+        # fig = None
 
     for cur_iter in tqdm(range(num_iters)):
         # get one batch
         if model_type == 'tcn':
-            inputs, labels = next(cur_loader)
+            inputs, labels, paths, enc = next(cur_loader)
         else:
             inputs, labels = _load(abnormal_list_path,
                                    normal_list_path,
@@ -107,31 +97,47 @@ def train(abnormal_list_path, normal_list_path, output_dir,
             save_model(model, weight_path=weight_path)
             log.debug(f'save model at iteration {cur_iter+1}')
 
-        if (cur_iter+1) % 1000 == 0 and validation:  # validation
-            valid_batch = 50
+        if (cur_iter+1) % 50 == 0 and validation:  # validation
 
-            list_gt_ind = []
-            list_gt_pred = []
-            list_vid_path = []
-            for i_valid, (vid_file, gt_ind, val_x) in enumerate(valid_gen):
-                val_x = np.expand_dims(val_x, axis=0)
-                pred_all, pred_x = model_valid.predict_on_batch(val_x)
-                pred_x = pred_x.squeeze()
+            # fig, _ = plt.subplots(total_row, im_per_row)
+            # fig.set_size_inches(10, 15)
+            # axes = fig.axes
 
-                list_gt_ind.append(gt_ind)
-                list_gt_pred.append(pred_x)
-                list_vid_path.append(vid_file)
-                if i_valid == valid_batch - 1:
-                    break
-            auc_score = valid_res(
-                list_gt_ind,
-                list_gt_pred,
-                list_vid_path,
-                dict_frame,
-                seg=32
-            )
-            log.info("\nValidation result")
-            log.info("  AUC: {}\n".format(auc_score))
+            all_pred = model.predict_on_batch(inputs)
+            for _i in range(0, batch_size, 2):
+                _pred = all_pred[_i]
+                abn_score = _pred[:, 0]
+                cls_score = enc.inverse_transform(
+                    np.argmax(_pred[:, 1:], axis=-1))
+                vid_path = paths[_i]
+                all_lines[Path(vid_path).stem].append(
+                    (abn_score, Counter(cls_score).most_common()[0]))
+
+        if (cur_iter+1) % 50 == 0 and validation:
+            total_images = len(all_lines)
+            im_per_row = 4
+            total_row = int(np.ceil(total_images / im_per_row))
+            fig, _ = plt.subplots(total_row, im_per_row)
+            fig.set_size_inches(10, 30)
+            axes = fig.axes
+
+            for cnt, k in enumerate(sorted(list(all_lines.keys()))):
+                num_lines = len(all_lines[k])
+                alpha_values = np.linspace(0.3, 1, num_lines)
+                ax = axes[cnt]
+                for line_ctr in range(num_lines):
+                    ax.plot(all_lines[k][line_ctr][0],
+                            alpha=alpha_values[line_ctr])
+                _title = k.split("_")[0] + '_' + all_lines[k][-1][1][0][:3]  \
+                    + '' + str(all_lines[k][-1][1][1])
+                ax.set_title(_title)
+                ax.set_ylim(0, 1.1)
+
+            fig.tight_layout()
+            fig.savefig('./tmp/'+str(cur_iter+1)+'.pdf')
+            # fig.show()
+            # del all_lines
+            # all_lines = defaultdict(list)
 
 
 def main():
@@ -147,7 +153,7 @@ def main():
                         help="Extract C3D features?")
     parser.add_argument("--mini", type=str, default="true",
                         help="Whether to use mini data")
-    parser.add_argument("--valid", action='store_true')
+    parser.add_argument("--valid", action='store_false')
     args = parser.parse_args()
     log.info(args)
 
@@ -171,7 +177,7 @@ def main():
         output_dir = 'model/trained_model'+flag_mini+'/C3D_attn'
         flag_split = "_C3D"
     elif args.model_type == 'tcn':
-        output_dir = 'model/trained_model'+flag_mini+'/tcn'
+        output_dir = 'model/trained_model'+flag_mini+'/tcn2'
         flag_split = '_C3D'
 
     # create file handler which logs even debug messages
@@ -187,10 +193,10 @@ def main():
     log.addHandler(fh)
 
     abnormal_list_path = _HOME + \
-        '/dataset/UCF_crime/custom_split' + flag_split +\
+        '/dataset/UCF_crime/one_custom_split' + flag_split +\
         '/Custom_train_split' + flag_mini + '_abnormal.txt'
     normal_list_path = _HOME + \
-        '/dataset/UCF_crime/custom_split' + flag_split +\
+        '/dataset/UCF_crime/one_custom_split' + flag_split +\
         '/Custom_train_split' + flag_mini + '_normal.txt'
 
     os.makedirs(output_dir, exist_ok=True)

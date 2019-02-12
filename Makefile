@@ -25,6 +25,12 @@ train-c3d-attn-mini:
 		--gpus=0,1 --mini=true \
 		--iter=20000
 
+train-tcn:
+	python train.py --model-type=tcn \
+		--gpus=0,1 --mini=false \
+		--iter=50000
+
+
 train-tcn-mini:
 	python train.py --model-type=tcn \
 		--gpus=0,1 --mini=true \
@@ -68,7 +74,11 @@ test-tcn-mini:
 		--pred=./results/predictions/tcn_mini/ \
 		--model-type=tcn
 
-
+test-tcn-mini:
+	python test.py --weight=./model/trained_model/tcn/ \
+		--model=./model/trained_model/tcn/model.json \
+		--pred=./results/predictions/tcn/ \
+		--model-type=tcn
 
 test-3d:
 	python test.py --weight=./model/trained_model/3D/ \

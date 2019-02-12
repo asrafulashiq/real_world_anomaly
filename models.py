@@ -3,7 +3,7 @@ from keras.regularizers import l2
 from keras.layers import Dense, Dropout, Input, multiply, Lambda
 from keras import backend as K
 from keras.models import Model
-from keras.optimizers import Adagrad
+from keras.optimizers import Adagrad, Adam
 from keras.layers import Activation, Flatten, Reshape
 from tcn import TCN
 from keras import activations
@@ -15,8 +15,10 @@ import numpy as np
 # default hyper-parameters
 batch_size = 60
 segment_size = 32
-lambda1 = 8e-5
-lambda2 = 8e-5
+lambda1 = 8e-6
+lambda2 = 5e-4
+
+num_class = 2
 
 num_iters = 20000
 lr = 0.001
@@ -28,10 +30,12 @@ def custom_multi_class_loss(y_true, y_pred):
         y_true -- size: [[None, 32, 6]]
     """
     # gt_score = y_true[:, :, 0]
-    pred_score = y_pred[:, :, 0]
+    pred_score = y_pred[:, :, 0]  # (batch_size, 32)
 
     # class_agnostic_score = K.max(pred_score, axis=1)
 
+    loss2 = K.constant([])
+    loss3 = K.constant([])
     class_agnostic_score = K.constant([])
     for i in range(batch_size):
         a = K.max(pred_score[i])
@@ -39,35 +43,55 @@ def custom_multi_class_loss(y_true, y_pred):
             [class_agnostic_score, [a]]
         )
 
-    # class_agnostic_gt = K.max(gt_score, axis=1)
+        if i % 2 == 0:
+            _loss2 = K.sum(K.square(
+                pred_score[i, :-1] - pred_score[i, 1:]
+            ))
+            loss2 = K.concatenate([loss2, [_loss2]])
+            loss3 = K.concatenate([loss3, [K.sum(pred_score[i])]])
+
     class_agnostic_gt = K.constant(np.tile(
         np.array([1, 0], dtype=np.float),
         batch_size // 2
     ))
 
-    class_gt_score = y_true[:, :, 1:]
-    class_pred_score = y_pred[:, :, 1:]
-
     loss1 = binary_crossentropy(
         class_agnostic_gt, class_agnostic_score
     )
+
+    loss2 = K.mean(loss2)
+    loss3 = K.mean(loss3)
 
     loss_cat = K.constant([])
 
     # work on the segments where abnormality greater than 0.5
     for i in range(0, batch_size, 2):
-        batch_pred = class_pred_score[i]  # shape : (32, 5)
-        wh = K.tf.greater(K.flatten(pred_score[i]), 0.5)  # shape : (32,)
-        abn_batch_pred = K.tf.boolean_mask(batch_pred, wh)  # shape : (?, 5)
-        batch_gt = class_gt_score[i]
-        abn_batch_gt = K.tf.boolean_mask(batch_gt, wh)
 
-        _cat_loss = K.categorical_crossentropy(
-            abn_batch_gt, abn_batch_pred
-        )
-        loss_cat = K.concatenate([loss_cat, _cat_loss])
+        batch_pred = y_pred[i, :, 1:]  # shape : (32, 5)
+        batch_gt = y_true[i, :, 1:]  # shape : (32, 5)
 
-    total_loss = loss1 + K.mean(loss_cat)
+        abnormality_score = y_pred[i, :, 0]  # shape : (32,)
+        sum_abn = K.sum(abnormality_score) + 1e-7
+
+        weighted_pred = K.constant(np.zeros((num_class,)))
+        for j in range(segment_size):
+            weighted_pred += abnormality_score[j] * batch_pred[j, :]
+
+        weighted_pred = weighted_pred / sum_abn
+
+        pred_full = weighted_pred  # K.sum(weighted_pred, axis=0)
+
+        _gt = batch_gt[0]
+        _loss = K.categorical_crossentropy(_gt, pred_full)
+        loss_cat = K.concatenate([loss_cat, [_loss]])
+
+    cat_mean_loss = K.mean(loss_cat)
+
+    # loss1 = K.tf.Print(loss1, [loss1], "Loss 1 ")
+    # cat_mean_loss = K.tf.Print(cat_mean_loss, [cat_mean_loss], "category loss ")
+
+    total_loss = loss1 + lambda1 * loss2 + lambda2 * loss3 + \
+        cat_mean_loss
 
     return total_loss
 
@@ -180,7 +204,7 @@ def create_model_tcn(segment_size=32, feat_size=4096):
     return model
 
 
-def create_multi_class_model(segment_size=32, feat_size=4096, num_classes=5):
+def create_multi_class_model(segment_size=32, feat_size=4096, num_classes=5, lamb=0.01):
     """ multi class network"""
     input_shape = (segment_size, feat_size)
     inputs = Input(input_shape, name='input')
@@ -188,23 +212,39 @@ def create_multi_class_model(segment_size=32, feat_size=4096, num_classes=5):
     # normal / abnormal class model
     t1 = TCN(nb_filters=128, kernel_size=3, dropout_rate=0.5,
              dilations=[1, 2], name='t1')(inputs)
-    t2 = TCN(nb_filters=1, kernel_size=2, dilations=[1, 2], dropout_rate=0.5,
-             name='abnormality', use_skip_connections=False)(t1)
+    out1 = TCN(nb_filters=1, kernel_size=2, dilations=[1, 2], dropout_rate=0.5,
+               name='abnormality', use_skip_connections=False,
+               last_activation='sigmoid')(t1)
 
-    model_abnormality = Model(inputs=inputs, outputs=t2)
-    model_abnormality.layers[-1].activation = activations.sigmoid
+    # t1 = Dense(512, input_dim=feat_size,
+    #            kernel_initializer='glorot_normal',
+    #            kernel_regularizer=l2(lamb), activation='relu')(inputs)
+
+    # t2 = Dropout(0.6)(t1)
+    # t2 = Dense(32, kernel_initializer='glorot_normal',
+    #            kernel_regularizer=l2(lamb))(t2)
+
+    # out1 = Dense(1, kernel_initializer='glorot_normal',
+    #              kernel_regularizer=l2(lamb), activation='sigmoid',
+    #              name='score')(t2)
 
     # class specific model
     tc2 = TCN(nb_filters=128, kernel_size=2, dilations=[1, 2],
               dropout_rate=0.5, name='tc2')(inputs)
-    tc3 = TCN(nb_filters=num_classes, kernel_size=2, dilations=[1],
-              use_skip_connections=False, name='cls_out')(tc2)
-    model_class = Model(inputs, tc3)
-    model_class.layers[-1].activation = activations.softmax
+    out2 = TCN(nb_filters=num_classes, kernel_size=2, dilations=[1],
+               use_skip_connections=False, name='cls_out',
+               last_activation='softmax')(tc2)
 
-    out = Concatenate(name='output')([
-        model_abnormality.output, model_class.output
-    ])
+    # tc1 = Dense(128, kernel_initializer='glorot_normal',
+    #             kernel_regularizer=l2(lamb))(t1)
+    # tc1 = Dropout(0.6)(tc1)
+    # tc1 = Dense(64, kernel_initializer='glorot_normal',
+    #             kernel_regularizer=l2(lamb))(tc1)
+    # tc1 = Dropout(0.3)(tc1)
+    # out2 = Dense(num_classes, kernel_initializer='glorot_normal',
+    #              kernel_regularizer=l2(lamb))(tc1)
+
+    out = Concatenate(name='output')([out1, out2])
 
     model = Model(inputs=inputs, outputs=out)
 
@@ -280,7 +320,8 @@ def create_model_with_attention(segment_size=32, lamb=0.01, feat_size=4096):
 
 def get_compiled_model(segment_size=32, feat_size=4096, lamb=0.01,
                        model_type="c3d"):
-    adagrad = Adagrad(lr=lr, epsilon=1e-08)  # optimizer
+    # adagrad = Adagrad(lr=lr, epsilon=1e-08)  # optimizer
+    optim = Adam(lr=lr)
     model = None
     _loss = None
 
@@ -299,8 +340,8 @@ def get_compiled_model(segment_size=32, feat_size=4096, lamb=0.01,
         # model = create_model_tcn(segment_size=segment_size,
         #                          feat_size=feat_size)
         # _loss = tmp_custom_multi_class_loss #custom_loss
-        model = create_multi_class_model(num_classes=5)
+        model = create_multi_class_model(num_classes=num_class)
         _loss = custom_multi_class_loss
 
-    model.compile(loss=_loss, optimizer=adagrad)
+    model.compile(loss=_loss, optimizer=optim)
     return model

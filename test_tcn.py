@@ -17,18 +17,18 @@ log.setLevel(logging.INFO)
 def main():
     parser = argparse.ArgumentParser(description="Testing anomaly detection")
     parser.add_argument('--weight', type=str,
-                        default="./model/trained_model/C3D/",
+                        default="./model/trained_model_mini/tcn/",
                         help="model weight path")
     parser.add_argument('--model', type=str,
-                        default="./model/trained_model/C3D/model.json",
+                        default="./model/trained_model_mini/tcn/model.json",
                         help="model.json path")
-    parser.add_argument("--mini", type=str, default="false",
+    parser.add_argument("--mini", type=str, default="true",
                         help="Whether to use mini data")
     parser.add_argument("--pred", type=str,
-                        default="./results/predictions/C3D/",
+                        default="./results/predictions/tcn_mini/",
                         help="path to save predictions")
     parser.add_argument("--model-type", dest='model_type',
-                        type=str, default="c3d",
+                        type=str, default="tcn",
                         help="Extract C3D features?")
     args = parser.parse_args()
     log.info(args)
@@ -52,6 +52,8 @@ def main():
 
     assert os.path.exists(test_list), \
         f"test list file {test_list} does not exist"
+
+    print(f"list : {test_list}")
     model_path = args.model
     weight_path = args.weight
     if os.path.isdir(args.model):
@@ -78,11 +80,8 @@ def main():
         pred = model.predict_on_batch(_input)
         # import pdb; pdb.set_trace()
         fname = pred_path / (vid_name + ".pkl")
-        if args.model_type == 'tcn':
-            if len(pred.shape) == 3:
-                pred = np.squeeze(pred, axis=0)
-        else:
-            pred = pred.squeeze()
+        if args.model_type == 'tcn' and len(pred.shape) == 3:
+            pred = np.squeeze(pred, axis=0)
         with fname.open("wb") as fp:
             pickle.dump(pred, fp, protocol=pickle.HIGHEST_PROTOCOL)
 

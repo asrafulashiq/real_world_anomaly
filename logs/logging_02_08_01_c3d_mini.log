@@ -1,8 +1,0 @@
-2019-02-08 01:41:31,507 - INFO: model output path model/trained_model_mini/C3D
-2019-02-08 01:41:32,395 - INFO: None
-2019-02-08 01:41:32,395 - INFO: saving model in model/trained_model_mini/C3D/model.json
-2019-02-08 01:41:32,396 - INFO: Iteration started
-2019-02-08 01:41:43,024 - INFO: 20: loss : 6.705815315246582
-2019-02-08 01:41:47,249 - INFO: 40: loss : 5.323464870452881
-2019-02-08 01:41:51,513 - INFO: 60: loss : 4.48240327835083
-2019-02-08 01:41:55,751 - INFO: 80: loss : 3.8852524757385254

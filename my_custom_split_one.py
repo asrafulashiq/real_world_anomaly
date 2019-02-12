@@ -18,7 +18,7 @@ orig_split_test = PARENT_FOLDER / "Anomaly_Detection_splits/Anomaly_Test.txt"
 
 feature_name = "C3D"
 feature_folder = PARENT_FOLDER / (feature_name+'_features') / "Avg"
-split_folder = PARENT_FOLDER / ("custom_split_"+feature_name)
+split_folder = PARENT_FOLDER / ("one_custom_split_"+feature_name)
 split_folder.mkdir(exist_ok=True)
 
 # LABEL_ANOMS = ['Abuse', 'Arrest', 'Arson', 'Assault', 'Burglary',
@@ -27,9 +27,10 @@ split_folder.mkdir(exist_ok=True)
 
 # LABEL_ANOMS = ['Abuse', 'Arrest', 'Arson', 'Assault', 'Burglary']
 # LABEL_ANOMS = ['Abuse', 'Arrest', 'Assault', 'Fighting', 'Arson']
-LABEL_ANOMS = ['Arson']
+LABEL_ANOMS = ['Arson', 'Assault']
 
 DOWN_RATIO = 5./13  # None
+NORM_LEN = 80
 
 
 """ create dict """
@@ -60,7 +61,7 @@ if DOWN_RATIO is not None:
                        'Training-Normal-Videos']
         for k in normal_keys:
             if k in _dict:
-                new_len = int(DOWN_RATIO * len(_dict[k]))
+                new_len = NORM_LEN  #int(DOWN_RATIO * len(_dict[k]))
                 _dict[k] = random.sample(
                     _dict[k], new_len
                 )

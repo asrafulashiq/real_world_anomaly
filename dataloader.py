@@ -8,12 +8,15 @@ import pandas as pd
 np.random.seed(0)
 
 
-def load_dataset_batch_with_segment_tcn(abnormal_list_path,
-                                        normal_list_path, batch_size=60,
-                                        segment_size=32, feat_size=4096):
+def tmp_load(abnormal_list_path,
+             normal_list_path, batch_size=60,
+             segment_size=32, feat_size=4096):
     """load abnormal and normal video for a batch.
-    for each type, feature size will be \
-    batch_size/2 * segment_size * [feature_size]
+    return:
+        data: (batch_size, 32, 4096)
+        lables: (batch_size, 32, 6)
+            The first value is abnormality score, next 5
+            values are one hot encoding of classes
     """
     import re
     from sklearn.preprocessing import LabelEncoder
@@ -53,7 +56,80 @@ def load_dataset_batch_with_segment_tcn(abnormal_list_path,
 
         data = np.zeros((batch_size, segment_size, feat_size), dtype=np.float)
         label_1 = np.zeros((batch_size, segment_size, 1), dtype=np.float)
-        label_2 = np.zeros((batch_size, segment_size, 5), dtype=np.float)
+        label_2 = np.zeros((batch_size, segment_size,
+                            len(encoder.classes_) - 1), dtype=np.float)
+
+        paths = []
+
+        for i in range(batch_size//2):
+            feat_abnormal = np.load(open(sampled_abnormal_list[i], 'rb'))
+            feat_normal = np.load(open(sampled_normal_list[i], 'rb'))
+
+            data[i*2] = feat_abnormal
+            data[i*2+1] = feat_normal
+
+            label_1[i*2] = 1
+            label_1[i*2+1] = 0
+
+            label_2[i*2, :, int(sampled_abnormal_labels[i])] = 1
+            # label_2[i*2+1, :, int(sampled_abnormal_labels[-1])] = 1
+            paths.append(sampled_abnormal_list[i])
+            paths.append(sampled_normal_list[i])
+
+        labels = np.concatenate((label_1, label_2), axis=-1)
+        yield data, labels, paths, encoder
+
+
+def load_dataset_batch_with_segment_tcn(abnormal_list_path,
+                                        normal_list_path, batch_size=60,
+                                        segment_size=32, feat_size=4096):
+    """load abnormal and normal video for a batch.
+    return:
+        data: (batch_size, 32, 4096)
+        lables: (batch_size, 32, 6)
+            The first value is abnormality score, next 5
+            values are one hot encoding of classes
+    """
+    import re
+    from sklearn.preprocessing import LabelEncoder
+    # from keras.utils import to_categorical
+
+    prog = re.compile('[^a-zA-Z]')
+
+    abnormal_list = []
+    normal_list = []
+    _categories = []
+
+    with open(abnormal_list_path, "r") as fp:
+        for line in fp:
+            line = line.rstrip()
+            abnormal_list.append(line)
+            name = line.split(os.path.sep)[-1]
+            _categories.append(prog.split(name)[0])
+
+    _categories.append("Normal")
+
+    encoder = LabelEncoder()
+    label_encoded = encoder.fit_transform(_categories)
+
+    with open(normal_list_path, "r") as fp:
+        normal_list = [line.rstrip() for line in fp]
+
+    abnormal_list = np.array(abnormal_list)
+    normal_list = np.array(normal_list)
+    _categories = np.array(_categories)
+
+    while True:
+        abn_indices = np.random.choice(len(abnormal_list), batch_size//2)
+        sampled_abnormal_list = abnormal_list[abn_indices]
+        sampled_abnormal_labels = label_encoded[abn_indices]
+
+        sampled_normal_list = np.random.choice(normal_list, batch_size//2)
+
+        data = np.zeros((batch_size, segment_size, feat_size), dtype=np.float)
+        label_1 = np.zeros((batch_size, segment_size, 1), dtype=np.float)
+        label_2 = np.zeros((batch_size, segment_size,
+                            _categories.classes_ - 1), dtype=np.float)
 
         for i in range(batch_size//2):
             feat_abnormal = np.load(open(sampled_abnormal_list[i], 'rb'))
@@ -69,7 +145,7 @@ def load_dataset_batch_with_segment_tcn(abnormal_list_path,
             # label_2[i*2+1, :, int(sampled_abnormal_labels[-1])] = 1
 
         labels = np.concatenate((label_1, label_2), axis=-1)
-        yield data, label_1
+        yield data, labels
 
 
 def load_dataset_batch(abnormal_list_path, normal_list_path,

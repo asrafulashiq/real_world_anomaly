@@ -1,4 +1,5 @@
 *.mp4
+*.log
 *.pkl
 *.h5
 model/*
