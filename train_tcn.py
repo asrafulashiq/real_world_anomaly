@@ -3,10 +3,10 @@ import logging
 from tqdm import tqdm
 import argparse
 import datetime
-from utils import save_model
-from dataloader import load_dataset_batch, load_valid_batch
-from dataloader import load_dataset_batch_with_segment
-from dataloader import load_dataset_batch_with_segment_tcn
+from utils.utils import save_model
+from IO.dataloader import load_dataset_batch, load_valid_batch
+from IO.dataloader import load_dataset_batch_with_segment
+from IO.dataloader import load_dataset_batch_with_segment_tcn
 from models import get_compiled_model
 import numpy as np
 import pickle
