@@ -8,6 +8,7 @@ import argparse
 from pathlib import Path
 # import matplotlib.pyplot as plt
 import imageio
+from tqdm import tqdm
 
 
 def ToImg(flow, bound):
@@ -22,14 +23,6 @@ def ToImg(flow, bound):
     flow[flow < -bound] = -bound
     flow += bound
     flow *= (255/float(2*bound))
-
-    # hsv = np.zeros((flow.shape[0], flow.shape[1], 3), dtype=np.float)
-    # hsv[..., 1] = 255
-    # mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
-    # hsv[..., 0] = ang*180/np.pi/2
-    # hsv[..., 2] = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX)
-    # hsv = hsv.astype(np.uint8)
-    # bgr = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
     # return bgr
     return flow.astype(np.uint8)
@@ -83,7 +76,6 @@ def dense_flow(augs):
     print(video_name)
 
     frame_num = 1
-    # videocapture.set(1, frame_num)
     _, prev_image = videocapture.read()
     prev_image = cv2.cvtColor(prev_image, cv2.COLOR_BGR2GRAY)
 
@@ -99,9 +91,8 @@ def dense_flow(augs):
 
         # print(frame_num)
 
-        if frame_num >= 50:
-            pass
-            # print("here")
+        if frame_num % 50 == 0:
+            print(f"frame {frame_num}")
 
         if not dtvl1.getUseInitialFlow():
             flowDTVL1 = dtvl1.calc(prev_image, next_frame, None)
@@ -109,14 +100,10 @@ def dense_flow(augs):
         else:
             flowDTVL1 = dtvl1.calc(prev_image, next_frame, flowDTVL1)
 
-
-        # flowDTVL1 = cv2.calcOpticalFlowFarneback(
-        #     prev_image, next_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0)
-
         # # this is to save flows and img.
         save_flows(flowDTVL1.copy(), image, save_dir, frame_num, bound)
 
-        prev_image = np.copy(next_frame)
+        prev_image = next_frame
         frame_num += 1
 
     videocapture.release()
@@ -139,7 +126,7 @@ def parse_args():
                         help='set the maximum of optical flow')
     # parser.add_argument('--s_', default=0, type=int, help='start id')
     # parser.add_argument('--e_', default=13320, type=int, help='end id')
-    parser.add_argument('--mode', default='debug', type=str,
+    parser.add_argument('--mode', default='run', type=str,
                         help='set \'run\' if debug done, otherwise, set debug')
     args = parser.parse_args()
     return args
@@ -157,7 +144,7 @@ if __name__ == '__main__':
     step = args.step
     bound = args.bound
 
-    do_overwrite = False
+    do_overwrite = True
     _HOME = os.environ['HOME']
     PARENT_FOLDER = Path(_HOME) / 'dataset' / 'UCF_crime'
     ANOM_FOLDER = PARENT_FOLDER / 'Anomaly-Videos'
@@ -206,9 +193,13 @@ if __name__ == '__main__':
             save_dir.append(feat_path)
 
     len_videos = len(video_list)
-    pool = Pool(num_workers)
+    # pool = Pool(num_workers)
     if mode == 'run':
-        pool.map(dense_flow, list(zip(video_list, save_dir, [
-                    step]*len(video_list), [bound]*len(video_list))))
+        # pool.map(dense_flow, list(zip(video_list, save_dir, [
+        #             step]*len(video_list), [bound]*len(video_list))))
+        for aug in tqdm(list(zip(video_list, save_dir,
+                                [step]*len(video_list), [bound]*len(video_list)))):
+            dense_flow(aug)
+
     else:  # mode=='debug
         dense_flow((video_list[0], save_dir[0], step, bound))

@@ -49,7 +49,6 @@ def get_frames_32_seg(num_frames, seg, frames_per_seg=16):
     return ind_array
 
 
-
 def get_num_frame(vid_file):
     """get the number of frames in a video
 
