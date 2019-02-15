@@ -8,6 +8,8 @@ from pathlib import Path
 import pickle
 from keras import Model
 import numpy as np
+from keras import Input, Model
+from global_var import segment_size, lambda3, batch_size, feat_size
 
 
 # set logging
@@ -36,7 +38,7 @@ args = parser.parse_args()
 log.info(args)
 
 if args.model_type == 'c3d' or args.model_type == 'c3d-attn':
-    flag_split = ""
+    flag_split = "_C3D"
 elif args.model_type == '3d':
     flag_split = "_3d"
 
@@ -75,23 +77,33 @@ model = load_model(model_path, weight_path=weight_path)
 
 # model.output = model.get_layer(name='score')
 
-pred_model = Model(inputs=model.input, outputs=[
-    model.output, model.get_layer(name='score').output
-])
+# create abn model
+abn_layer = model.get_layer(name='abnormality')
+test_input = Input(batch_shape=(segment_size, feat_size))
+abn_out = abn_layer(test_input)
+abn_model = Model(test_input, abn_out)
+
+# create attention layer
+attn_model = Model(model.input, model.get_layer('attention').output)
 
 
-for vid_name, _input in load_one_video(test_list, log=log):
+for vid_name, _input in load_one_video(test_list, log=log, normalize=True):
+
     inp = np.expand_dims(_input, axis=0)
-    pred_all, pred = pred_model.predict(inp)
+
+    # attention output
+    out_atttn = attn_model.predict_on_batch(inp).squeeze()
+    # abn output
+    out_abn = abn_model.predict_on_batch(_input).squeeze()
+
+    out_all = model.predict_on_batch(inp)[0].squeeze()
     # import pdb; pdb.set_trace()
     fname = pred_path / (vid_name + ".pkl")
     with fname.open("wb") as fp:
         # pickle.dump((pred_all.squeeze(), pred.squeeze()),
         #             fp, protocol=pickle.HIGHEST_PROTOCOL)
-        pickle.dump(pred.squeeze(),
+        pickle.dump([out_atttn, out_abn, out_all],
                     fp, protocol=pickle.HIGHEST_PROTOCOL)
-
-
 
 # if __name__ == "__main__":
 #     main()

@@ -4,6 +4,52 @@ import numpy as np
 from sklearn.metrics import roc_auc_score
 
 
+def divide_frames_seg(num_frames, seg):
+    """ get total frames into seg segments """
+    ind = []
+    for i in range(seg):
+        b = int(np.floor(max(0, i * num_frames/seg)))
+        e = int(np.floor(max(0, (i+1) * num_frames/seg)))
+        if e < b:
+            e = b
+        ind.append((b, e))
+    return ind
+
+
+def get_frames_seg(num_frames, seg, frames_per_seg=16):
+    num_feat = num_frames // frames_per_seg
+    div_ind = divide_frames_seg(num_feat, seg)
+    ind_array = []
+    for counter, ishots in enumerate(div_ind):
+        ss, ee = ishots
+        ind = (ss*frames_per_seg, (ee+1)*frames_per_seg-1)
+        ind_array.append(ind)
+    ind_array[-1] = (ind_array[-1][0], num_frames-1)
+    return ind_array
+
+
+def get_frames_32_seg(num_frames, seg, frames_per_seg=16):
+    """ get indices when equally divide 32 segments """
+    # TODO: Check if it can be modified
+    num_feat = num_frames // frames_per_seg
+    thirty2_shots = np.round(
+        np.linspace(0, num_feat-1, seg+1)
+    ).astype(np.int)
+    ind_array = []
+    for counter, ishots in enumerate(range(len(thirty2_shots)-1)):
+        ss = thirty2_shots[ishots]
+        ee = thirty2_shots[ishots+1] - 1
+
+        if ss == ee or ss > ee:
+            ind = (ss*frames_per_seg, (ss+1)*frames_per_seg-1)
+        else:
+            ind = (ss*frames_per_seg, (ee+1)*frames_per_seg-1)
+        ind_array.append(ind)
+    ind_array[-1] = (ind_array[-1][0], num_frames-1)
+    return ind_array
+
+
+
 def get_num_frame(vid_file):
     """get the number of frames in a video
 
@@ -77,27 +123,6 @@ def save_model(model, json_path=None, weight_path=None):
             fp.write(model_json)
     if weight_path:
         model.save_weights(weight_path)
-
-
-def get_frames_32_seg(num_frames, seg, frames_per_seg=16):
-    """ get indices when equally divide 32 segments """
-    # TODO: Check if it can be modified
-    num_feat = num_frames // frames_per_seg
-    thirty2_shots = np.round(
-        np.linspace(0, num_feat-1, seg+1)
-    ).astype(np.int)
-    ind_array = []
-    for counter, ishots in enumerate(range(len(thirty2_shots)-1)):
-        ss = thirty2_shots[ishots]
-        ee = thirty2_shots[ishots+1] - 1
-
-        if ss == ee or ss > ee:
-            ind = (ss*frames_per_seg, (ss+1)*frames_per_seg-1)
-        else:
-            ind = (ss*frames_per_seg, (ee+1)*frames_per_seg-1)
-        ind_array.append(ind)
-    ind_array[-1] = (ind_array[-1][0], num_frames-1)
-    return ind_array
 
 
 def valid_res(list_gt_ind, list_gt_pred, list_vid_path, dict_frame, seg=32):

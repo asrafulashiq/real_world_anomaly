@@ -17,7 +17,7 @@ orig_split_train = PARENT_FOLDER / "Anomaly_Detection_splits/Anomaly_Train.txt"
 orig_split_test = PARENT_FOLDER / "Anomaly_Detection_splits/Anomaly_Test.txt"
 
 feature_name = "C3D"
-feature_folder = PARENT_FOLDER / (feature_name+'_features') / "Avg"
+feature_folder = PARENT_FOLDER / (feature_name+'_features') / "seg_500"  # "Avg"
 split_folder = PARENT_FOLDER / ("custom_split_"+feature_name)
 split_folder.mkdir(exist_ok=True)
 
@@ -25,11 +25,9 @@ split_folder.mkdir(exist_ok=True)
 #                'Explosion', 'Fighting', 'RoadAccidents', 'Robbery',
 #                'Shooting', 'Shoplifting', 'Stealing', 'Vandalism']
 
-# LABEL_ANOMS = ['Abuse', 'Arrest', 'Arson', 'Assault', 'Burglary']
-# LABEL_ANOMS = ['Abuse', 'Arrest', 'Assault', 'Fighting', 'Arson']
-LABEL_ANOMS = ['Arson']
+LABEL_ANOMS = ['Arrest', 'Fighting']
 
-DOWN_RATIO = 5./13  # None
+DOWN_RATIO = 2./13  # None
 
 
 """ create dict """

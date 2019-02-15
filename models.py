@@ -10,18 +10,8 @@ from keras import activations
 from keras.layers import Concatenate
 from keras.losses import binary_crossentropy
 import numpy as np
-
-
-# default hyper-parameters
-batch_size = 60
-segment_size = 32
-lambda1 = 8e-6
-lambda2 = 5e-4
-
-num_class = 2
-
-num_iters = 20000
-lr = 0.001
+from global_var import num_class, segment_size, batch_size, lambda1, lambda2,\
+                        lr
 
 
 def custom_multi_class_loss(y_true, y_pred):
@@ -179,7 +169,7 @@ def custom_loss(y_true, y_pred):
 
 def custom_loss_attn(y_true, y_pred):
     """custom objective function for attention """
-    return K.binary_crossentropy(y_true, y_pred)
+    return K.binary_crossentropy(K.flatten(y_true), K.flatten(y_pred))
 
 
 def create_model_tcn(segment_size=32, feat_size=4096):
@@ -283,6 +273,15 @@ def create_model(lamb=0.01, feat_size=4096):
     return model
 
 
+def custom_loss_l1(y_true, y_pred):
+    """ L1 loss """
+    y = y_pred[:batch_size//2]
+    y = K.flatten(y)
+    _abs = K.abs(y)
+    loss = K.sum(_abs)
+    return loss
+
+
 def create_model_with_attention(segment_size=32, lamb=0.01, feat_size=4096):
     """ model with temporal attention """
 
@@ -290,30 +289,24 @@ def create_model_with_attention(segment_size=32, lamb=0.01, feat_size=4096):
     input_shape = (segment_size, feat_size)
     inputs = Input(input_shape, name="input_features")
 
-    x = Dense(512, activation='relu')(inputs)
-    x = Dense(32, activation='relu')(x)
-    x = Dense(1)(x)
-    x = Flatten()(x)
-    x_score = Activation('softmax', name='score')(x)
-    # x_soft = K.expand_dims(x_score, axis=-1)
-    x_soft = Reshape((segment_size, 1))(x_score)
-    y = multiply([inputs, x_soft])
+    # attention module
+    x = Dense(512, activation='relu',
+              kernel_initializer='glorot_normal')(inputs)
+    x = Dense(32, activation='relu', kernel_initializer='glorot_normal')(x)
+    x_score = Dense(1, activation='sigmoid', name='attention')(x)
+
+    # abnormality module
+    y = multiply([inputs, x_score])
 
     y = Lambda(
         lambda z: K.sum(z, axis=-2)
     )(y)
 
-    # classification model
-    y = Dense(512, kernel_initializer='glorot_normal',
-              kernel_regularizer=l2(lamb), activation='relu')(y)
-    y = Dropout(0.6)(y)
-    y = Dense(32, kernel_initializer='glorot_normal',
-              kernel_regularizer=l2(lamb))(y)
-    y = Dropout(0.6)(y)
     y = Dense(1, kernel_initializer='glorot_normal',
-              kernel_regularizer=l2(lamb), activation='sigmoid')(y)
+              kernel_regularizer=l2(lamb), activation='sigmoid',
+              name="abnormality")(y)
 
-    model = Model(inputs=inputs, outputs=y)
+    model = Model(inputs=inputs, outputs=[y, x_score])
 
     return model
 
@@ -324,6 +317,7 @@ def get_compiled_model(segment_size=32, feat_size=4096, lamb=0.01,
     optim = Adam(lr=lr)
     model = None
     _loss = None
+    _loss_weights = None
 
     if model_type == "c3d":  # normal c3d model
         model = create_model(lamb, feat_size)
@@ -332,7 +326,8 @@ def get_compiled_model(segment_size=32, feat_size=4096, lamb=0.01,
         model = create_model_with_attention(
             segment_size, lamb, feat_size
         )
-        _loss = custom_loss_attn
+        _loss = [custom_loss_attn, custom_loss_l1]
+        _loss_weights = [1.0, 1./5000]
     elif model_type == '3d':
         model = create_model_3d(lamb)
         _loss = custom_loss
@@ -343,5 +338,5 @@ def get_compiled_model(segment_size=32, feat_size=4096, lamb=0.01,
         model = create_multi_class_model(num_classes=num_class)
         _loss = custom_multi_class_loss
 
-    model.compile(loss=_loss, optimizer=optim)
+    model.compile(loss=_loss, optimizer=optim, loss_weights=_loss_weights)
     return model

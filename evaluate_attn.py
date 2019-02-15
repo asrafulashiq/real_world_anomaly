@@ -4,7 +4,7 @@ from pathlib import Path
 import pickle
 import os
 import re
-from utils import get_num_frame, get_frames_32_seg
+from utils import get_num_frame, get_frames_seg
 import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_curve, auc, roc_auc_score
@@ -12,11 +12,12 @@ from sklearn.metrics import classification_report, accuracy_score
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 import argparse
+from global_var import segment_size, lambda3, batch_size, feat_size
 
 
 parser = argparse.ArgumentParser(description="Training anomaly detection")
 parser.add_argument("--pred", type=str,
-                    default="./results/predictions/C3D_attn/",
+                    default="./results/predictions/C3D_attn_mini/",
                     help="path to save predictions")
 args = parser.parse_args()
 
@@ -26,7 +27,7 @@ PRED_PATH = Path(args.pred)
 DATA_HOME = Path(_HOME + '/dataset/UCF_crime/')
 ANOM_DIR = DATA_HOME / "Anomaly-Videos"
 TEST_NORM_DIR = DATA_HOME / "Testing_Normal_Videos_Anomaly"
-SEG = 32
+SEG = segment_size
 TEMP_ANN_FILE = './Temporal_Anomaly_Annotation.txt'
 df_temp_ann = pd.read_csv(
     TEMP_ANN_FILE,
@@ -34,6 +35,8 @@ df_temp_ann = pd.read_csv(
     header=None,
     skipinitialspace=True
 )
+
+Dict_frame_num = pickle.load(open("./frame_num.pkl", "rb"))
 
 
 def get_ind_from_pd(df):
@@ -62,8 +65,8 @@ for pred_file in tqdm(PRED_PATH.iterdir()):
     if pred_file.suffix != '.pkl':
         continue
     with pred_file.open('rb') as fp:
-        _pred_all, _pred = pickle.load(fp)
-    # _pred_all = _pred_all
+        _pred_attn, _pred_abn, _pred_all = pickle.load(fp)
+    _pred = _pred_attn * _pred_abn
     # search this pred_file video
     vid_name = pred_file.stem  # remove suffix from file name
 
@@ -76,15 +79,15 @@ for pred_file in tqdm(PRED_PATH.iterdir()):
         assert vid_path.exists()
 
     # get frame number from video
-    num_frames = get_num_frame(vid_path)
-    indices = get_frames_32_seg(num_frames, SEG)
+    num_frames = Dict_frame_num[vid_name]
+    indices = get_frames_seg(num_frames, SEG)
 
     # get prediction for each frame
     score_pred = np.zeros(num_frames)
     for counter, ind in enumerate(indices):
         start_ind = ind[0]
         end_ind = ind[1]
-        score_pred[start_ind:end_ind+1] = _pred[counter]*_pred_all
+        score_pred[start_ind:end_ind+1] = _pred[counter]
 
     all_score_pred = np.concatenate(
         (all_score_pred, score_pred)

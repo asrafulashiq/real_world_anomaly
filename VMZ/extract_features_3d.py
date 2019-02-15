@@ -55,7 +55,7 @@ FEAT_ANOM_FOLDER = FEAT_PARENT_FOLDER / 'Anomaly-Videos'
 
 FEAT_ANOM_FOLDER.mkdir(parents=True, exist_ok=True)
 
-'''
+
 for anom in ANOM_FOLDER.iterdir():
     anom_type = anom.name
     anom_type_folder = FEAT_ANOM_FOLDER #/ anom_type
@@ -84,7 +84,7 @@ for anom in ANOM_FOLDER.iterdir():
 		subprocess.check_output(CMD_2, shell=True)
 		# shutil.rmtree('tmp_lmdb_data')
 		# asdasdasdas
-'''
+
 
 # extract normal folder
 normal_test_train = ['Training-Normal-Videos',

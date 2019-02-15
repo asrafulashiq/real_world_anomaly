@@ -38,7 +38,7 @@ def tmp_load(abnormal_list_path,
     _categories.append("Normal")
 
     encoder = LabelEncoder()
-    label_encoded = encoder.fit_transform(_categories)
+    # label_encoded = encoder.fit_transform(_categories)
 
     with open(normal_list_path, "r") as fp:
         normal_list = [line.rstrip() for line in fp]
@@ -50,14 +50,17 @@ def tmp_load(abnormal_list_path,
     while True:
         abn_indices = np.random.choice(len(abnormal_list), batch_size//2)
         sampled_abnormal_list = abnormal_list[abn_indices]
-        sampled_abnormal_labels = label_encoded[abn_indices]
+        # sampled_abnormal_labels = label_encoded[abn_indices]
 
         sampled_normal_list = np.random.choice(normal_list, batch_size//2)
 
         data = np.zeros((batch_size, segment_size, feat_size), dtype=np.float)
-        label_1 = np.zeros((batch_size, segment_size, 1), dtype=np.float)
-        label_2 = np.zeros((batch_size, segment_size,
-                            len(encoder.classes_) - 1), dtype=np.float)
+        # label_1 = np.zeros((batch_size, segment_size, 1), dtype=np.float)
+        # label_2 = np.zeros((batch_size, segment_size,
+                            # len(encoder.classes_) - 1), dtype=np.float)
+
+        label_1 = np.zeros((batch_size, 1), dtype=np.float)
+        label_2 = np.ones((batch_size, segment_size, 1), dtype=np.float)
 
         paths = []
 
@@ -65,18 +68,21 @@ def tmp_load(abnormal_list_path,
             feat_abnormal = np.load(open(sampled_abnormal_list[i], 'rb'))
             feat_normal = np.load(open(sampled_normal_list[i], 'rb'))
 
-            data[i*2] = feat_abnormal
-            data[i*2+1] = feat_normal
+            data[i] = feat_abnormal / np.linalg.norm(feat_abnormal)
+            data[batch_size//2 + i] = feat_normal / np.linalg.norm(feat_normal)
 
-            label_1[i*2] = 1
-            label_1[i*2+1] = 0
+            label_1[i] = 1
+            label_1[batch_size//2 + i] = 0
 
-            label_2[i*2, :, int(sampled_abnormal_labels[i])] = 1
+            # label_2[i*2, :, int(sampled_abnormal_labels[i])] = 1
             # label_2[i*2+1, :, int(sampled_abnormal_labels[-1])] = 1
             paths.append(sampled_abnormal_list[i])
             paths.append(sampled_normal_list[i])
 
-        labels = np.concatenate((label_1, label_2), axis=-1)
+        paths = [paths[i] for i in range(0, batch_size, 2)] +\
+                [paths[i] for i in range(1, batch_size, 2)]
+        # labels = np.concatenate((label_1, label_2), axis=-1)
+        labels = [label_1, label_2]
         yield data, labels, paths, encoder
 
 
@@ -226,7 +232,7 @@ def load_dataset_batch_with_segment(abnormal_list_path,
         yield data, labels
 
 
-def load_one_video(test_file, log=None, valid=False):
+def load_one_video(test_file, log=None, normalize=True):
     """ get one video features """
     with open(test_file, "r") as fp:
         test_list = [line.rstrip() for line in fp]
@@ -237,10 +243,9 @@ def load_one_video(test_file, log=None, valid=False):
         if log:
             log.info(f'test for {f_vid}')
         feature = np.load(open(f_vid, "rb"))
-        if valid:
-            _path = Path(f_vid).stem
-        else:
-            _path = Path(f_vid).stem
+        if normalize:
+            feature = feature / np.linalg.norm(feature)
+        _path = Path(f_vid).stem
         # return video name and features
         yield _path, feature
 
@@ -256,7 +261,7 @@ def get_ind_from_pd(df):
     return ret_ind
 
 
-def load_valid_batch(valid_list_file, tmp_ann_file):
+def load_valid_batch(valid_list_file, tmp_ann_file, normalize=True):
     """get validation data of batch size batch"""
 
     df_temp_ann = pd.read_csv(
@@ -266,14 +271,18 @@ def load_valid_batch(valid_list_file, tmp_ann_file):
         skipinitialspace=True
     )
 
-    while True:
-        for vid_file, valid_feat in load_one_video(
-                                    valid_list_file, valid=True):
-            # vid_name = vid_file.stem
-            x_row = df_temp_ann.loc[df_temp_ann[0] == vid_file]
-            gt_ind = get_ind_from_pd(x_row)
+    with open(valid_list_file, 'r') as fp:
+        valid_list = sorted([i.rstrip() for i in fp])
 
-            yield vid_file, gt_ind, valid_feat
+    for vid_file in valid_list:
+        valid_feat = np.load(open(vid_file, 'rb'))
+        valid_feat = valid_feat / np.linalg.norm(valid_feat)
+        vname = Path(vid_file).stem
+        # vid_name = vid_file.stem
+        x_row = df_temp_ann.loc[df_temp_ann[0] == vname]
+        gt_ind = get_ind_from_pd(x_row)
+
+        yield vname, gt_ind, valid_feat
 
 
 if __name__ == "__main__":
