@@ -6,7 +6,7 @@ feat_size = 4096
 lambda1 = 8e-6
 lambda2 = 5e-4
 
-num_class = 2
+num_class = 5
 
-num_iters = 20000
+num_iters = 50000
 lr = 0.001

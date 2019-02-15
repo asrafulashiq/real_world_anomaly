@@ -8,8 +8,6 @@ from dataloader import load_dataset_batch, load_valid_batch
 from dataloader import load_dataset_batch_with_segment, tmp_load
 from models import get_compiled_model
 import numpy as np
-import pickle
-
 from global_var import segment_size, lambda3, batch_size, feat_size
 
 # set logging

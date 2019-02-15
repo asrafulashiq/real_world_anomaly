@@ -25,7 +25,7 @@ split_folder.mkdir(exist_ok=True)
 #                'Explosion', 'Fighting', 'RoadAccidents', 'Robbery',
 #                'Shooting', 'Shoplifting', 'Stealing', 'Vandalism']
 
-LABEL_ANOMS = ['Arrest', 'Fighting']
+LABEL_ANOMS = ['Arrest', 'Arson', 'Assault', 'Burglary', 'Fighting']
 
 DOWN_RATIO = 2./13  # None
 
@@ -33,8 +33,8 @@ DOWN_RATIO = 2./13  # None
 """ create dict """
 dict_test = defaultdict(list)
 dict_train = defaultdict(list)
-DICT_LABELS = LABEL_ANOMS + ['Testing_Normal_Videos_Anomaly',
-                             'Training-Normal-Videos']
+DICT_LABELS = LABEL_ANOMS #+ ['Testing_Normal_Videos_Anomaly',
+                          #   'Training-Normal-Videos']
 
 with orig_split_test.open("r") as fp:
     for line in fp:
