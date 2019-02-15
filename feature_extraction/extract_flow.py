@@ -3,10 +3,7 @@ import numpy as np
 import cv2
 from multiprocessing import Pool
 import argparse
-# import skvideo.io
-# import scipy.misc
 from pathlib import Path
-# import matplotlib.pyplot as plt
 import imageio
 from tqdm import tqdm
 
@@ -112,12 +109,13 @@ def dense_flow(augs):
 
 
 def parse_args():
+    _HOME = os.environ['HOME']
     parser = argparse.ArgumentParser(
         description="densely extract the video frames and optical flows")
     parser.add_argument('--dataset', default='ucf-crime', type=str,
                         help='set the dataset name, to find the data path')
     parser.add_argument(
-        '--data_root', default='/home/ash/dataset/UCF_crime', type=str)
+        '--data_root', default=_HOME+'/dataset/UCF_crime', type=str)
     # parser.add_argument('--new_dir', default='flows', type=str)
     parser.add_argument('--num_workers', default=4, type=int,
                         help='num of workers to act multi-process')
